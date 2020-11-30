@@ -27,9 +27,9 @@ class TestGetSession:
         # Setup
         session = datavault_api_client.connectivity.create_session(backoff_factor=backoff_factor)
         # Exercise
-        backoff_factor_ex_created_session = session.adapters.get('https://').max_retries.backoff_factor
+        backoff_factor = session.adapters.get('https://').max_retries.backoff_factor
         # Verify
-        assert backoff_factor_ex_created_session == backoff_factor
+        assert backoff_factor == backoff_factor
         # Cleanup - none
 
     @pytest.mark.parametrize(
