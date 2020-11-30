@@ -5,8 +5,9 @@ underlying a pre-defined Datavault API endpoint, to discover all the files avail
 download in the tree underneath that specific endpoint.
 """
 
-import urllib.parse
+import re
 from typing import Optional, Set
+import urllib.parse
 
 from datavault_api_client.connectivity import create_session
 
@@ -43,4 +44,26 @@ def clean_raw_filename(raw_filename: str) -> str:
         return "_".join([filename_components[0], filename_components[2], filename_components[3]])
     return raw_filename
 
+
+def parse_source_from_file_name(file_name: str) -> str:
+    """Parses the source id from a DataVault file name.
+
+    Using the naming convention used across the different file types in the DataVault
+    platform, that structures file names according to the '<FILE-TYPE>_<SOURCE-ID>_<DATE>'
+    format, the function parses the passed file name and return the second element of
+    the name, which contains the source.
+
+    Parameters
+    ----------
+    file_name: str
+        The file name of a DataVault file.
+
+    Returns
+    -------
+    str
+        The source id parsed from file_name
+    """
+    if not re.match(r"^[A-Z]+_[0-9]{3,4}_[0-9]{8}\.txt\.bz2$", file_name):
+        raise Exception
+    return file_name.split("_")[1]
 
