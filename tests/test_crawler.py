@@ -1,5 +1,5 @@
 import pytest
-
+import requests
 from datavault_api_client import crawler
 from datavault_api_client.data_structures import DiscoveredFileInfo
 
@@ -67,6 +67,64 @@ class TestCreateDiscoveredFileObject:
         )
         assert created_discovered_file_object == expected_discovered_file_object
         # Cleanup - none
+
+
+class TestInitializeSearch:
+    def test_initialization_of_search_from_instrument_url(
+        self,
+        mocked_datavault_api_instrument_level,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/WATCHLIST"
+        credentials = ("username", "password")
+        # Exercise
+        stack, leaf_nodes = crawler.initialise_search(url, credentials, session)
+        # Verify
+        expected_stack = []
+        expected_leaf_nodes = [
+            DiscoveredFileInfo(
+                file_name="WATCHLIST_367_20200716.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/"
+                    "WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
+                ),
+                source="367",
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            )
+        ]
+        assert stack == expected_stack
+        assert leaf_nodes == expected_leaf_nodes
+        # Cleanup - none
+
+    def test_inizialization_of_search_from_to_level(
+        self,
+        mocked_top_level_datavault_api,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list"
+        credentials = ("username", "password")
+        # Exercise
+        stack, leaf_nodes = crawler.initialise_search(url, credentials, session)
+        # Verify
+        expected_stack = [
+            {
+                'name': '2020',
+                'parent': '/v2/list',
+                'url': '/v2/list/2020',
+                'size': 0,
+                'createdAt': '2020-01-01T00:00:00',
+                'updatedAt': '2020-12-01T00:00:00',
+                'writable': False,
+                'directory': True
+            },
+        ]
+        expected_leaf_nodes = []
+        assert stack == expected_stack
+        assert leaf_nodes == expected_leaf_nodes
+
 
 
 class TestCreateNodeUrl:
