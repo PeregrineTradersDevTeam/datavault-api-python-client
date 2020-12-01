@@ -24,6 +24,18 @@ class TestCleanRawFilename:
         # Cleanup - none
 
 
+class TestParseSourceFromName:
+    def test_source_id_parser(self):
+        # Setup
+        filename_to_parse = "WATCHLIST_945_20201201.txt.bz2"
+        # Exercise
+        parsed_source_id = crawler.parse_source_from_name(filename_to_parse)
+        # Verify
+        expected_source_id = "945"
+        assert parsed_source_id == expected_source_id
+        # Cleanup - none
+
+
 class TestDatavaultCrawl:
     def test_crawler_with_instrument_level_url(
         self,
