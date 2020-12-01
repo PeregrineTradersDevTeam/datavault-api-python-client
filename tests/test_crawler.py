@@ -69,6 +69,18 @@ class TestCreateDiscoveredFileObject:
         # Cleanup - none
 
 
+class TestCreateNodeUrl:
+    def test_creation_of_node_url(self):
+        # Setup
+        url_path = "v2/list/2020/11/30/S945"
+        # Exercise
+        node_url = crawler.create_node_url(url_path)
+        # Verify
+        expected_url = "https://api.icedatavault.icedataservices.com/v2/list/2020/11/30/S945"
+        assert node_url == expected_url
+        # Cleanup - none
+
+
 class TestDatavaultCrawl:
     def test_crawler_with_instrument_level_url(
         self,
