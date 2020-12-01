@@ -1,6 +1,7 @@
 import pytest
 
 from datavault_api_client import crawler
+from datavault_api_client.data_structures import DiscoveredFileInfo
 
 
 class TestCleanRawFilename:
@@ -33,6 +34,38 @@ class TestParseSourceFromName:
         # Verify
         expected_source_id = "945"
         assert parsed_source_id == expected_source_id
+        # Cleanup - none
+
+
+class TestCreateDiscoveredFileObject:
+    def test_discovered_file_object_creation(self):
+        # Setup
+        file_node = {
+            'name': 'WATCHLIST_accountname_945_20201130.txt.bz2',
+            'fid': '20201130-S945_WATCHLIST_accountname_0_0',
+            'parent': '/v2/list/2020/11/30/S945/WATCHLIST',
+            'url': '/v2/data/2020/11/30/S945/WATCHLIST/20201130-S945_WATCHLIST_accountname_0_0',
+            'size': 78994869,
+            'md5sum': 'bf703f867cad0b414d84fac0c9bfe0e5',
+            'createdAt': '2020-11-30T23:22:36',
+            'updatedAt': '2020-11-30T23:22:36',
+            'writable': False,
+            'directory': False
+        }
+        # Exercise
+        created_discovered_file_object = crawler.create_discovered_file_object(file_node)
+        # Verify
+        expected_discovered_file_object = DiscoveredFileInfo(
+            file_name='WATCHLIST_945_20201130.txt.bz2',
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/11/30/S945/WATCHLIST/"
+                "20201130-S945_WATCHLIST_accountname_0_0"
+            ),
+            source="945",
+            size=78994869,
+            md5sum="bf703f867cad0b414d84fac0c9bfe0e5",
+        )
+        assert created_discovered_file_object == expected_discovered_file_object
         # Cleanup - none
 
 
