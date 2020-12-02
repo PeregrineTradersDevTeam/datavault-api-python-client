@@ -65,3 +65,28 @@ def convert_mib_to_bytes(size_in_mib: float) -> int:
         The size in Bytes equivalent to the passed size in MiB.
     """
     return round(size_in_mib * (1024**2))
+
+
+def calculate_multi_part_threshold(partition_size_in_mib: float) -> int:
+    """Calculates the file size above which a file is to be split in same size partitions.
+
+    The multi-part threshold is calculated as 2 times the partition size in bytes, plus an
+    additional buffer of 80% the partition size in bytes. By using this threshold, only
+    files that have at least two same-size partitions and one additional partition that
+    is at least as large as 80% of the partition size are actually split into multiple
+    partitions.
+
+    Parameters
+    ----------
+    partition_size_in_mib: float
+        The partition size in MiB.
+
+    Returns
+    -------
+    int
+        The multi-part threshold in Bytes.
+    """
+    return round(
+        (convert_mib_to_bytes(partition_size_in_mib) * 2) +
+        (0.8 * convert_mib_to_bytes(partition_size_in_mib))
+    )
