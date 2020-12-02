@@ -110,3 +110,50 @@ def check_if_partitioned(file_size_in_bytes: int, partition_size_in_mib: float) 
     if file_size_in_bytes >= calculate_multi_part_threshold(partition_size_in_mib):
         return True
     return False
+
+
+def process_raw_download_info(
+    raw_download_info: DiscoveredFileInfo,
+    path_to_data_folder: str,
+    partition_size_in_mib: float,
+) -> DownloadDetails:
+    """Process the raw download information contained in a DiscoveredFileInfo named-tuple.
+
+    The information contained in a DiscoveredFileInfo named-tuple is not comprehensive
+    enough for the download phase. For this reason, this information is enriched with
+    information that is specifically designed to facilitate the download process. The
+    function adds to the information already contained in the DiscoveredFileInfo object,
+    the full path to the location where the file has to be downloaded (the path respects
+    the structure of the DataVault API directory tree) and a is_partitioned flag that
+    informs whether a file is large enough to require partitioning in case of concurrent
+    download or not.
+
+    Parameters
+    ----------
+    raw_download_info: DiscoveredFileInfo
+        A DiscoveredFileInfo containing the information that characterise a file in the
+        DataVault API.
+    path_to_data_folder: str
+        The full path to the directory where the file will be downloaded.
+    partition_size_in_mib: float
+        The partition size in MiB.
+
+    Returns
+    -------
+    DownloadDetails
+        A DownloadDetails named tuple containing the file name, the download url, the file
+        path where the file will be downloaded, the file size, the md5sum digest, and a
+        flag that informs whether the file is eligible to be split in multiple partitions.
+    """
+    return DownloadDetails(
+        file_name=raw_download_info.file_name,
+        download_url=raw_download_info.download_url,
+        file_path=generate_file_path_matching_datavault_structure(
+            path_to_data_folder,
+            file_name=raw_download_info.file_name,
+            datavault_download_url=raw_download_info.download_url,
+        ),
+        size=raw_download_info.size,
+        md5sum=raw_download_info.md5sum,
+        is_partitioned=check_if_partitioned(raw_download_info.size, partition_size_in_mib)
+    )
