@@ -90,3 +90,23 @@ def calculate_multi_part_threshold(partition_size_in_mib: float) -> int:
         (convert_mib_to_bytes(partition_size_in_mib) * 2) +
         (0.8 * convert_mib_to_bytes(partition_size_in_mib))
     )
+
+
+def check_if_partitioned(file_size_in_bytes: int, partition_size_in_mib: float) -> bool:
+    """Checks whether a file size exceeds the multi-part threshold.
+
+    Parameters
+    ----------
+    file_size_in_bytes: int
+        The file size of the file in Bytes.
+    partition_size_in_mib: float
+        The desired partition's size in MiB.
+
+    Returns
+    -------
+    bool
+        True if the file size is larger than the multi-part threshold, False otherwise.
+    """
+    if file_size_in_bytes >= calculate_multi_part_threshold(partition_size_in_mib):
+        return True
+    return False
