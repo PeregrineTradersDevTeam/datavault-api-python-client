@@ -98,7 +98,50 @@ class TestInitializeSearch:
         assert leaf_nodes == expected_leaf_nodes
         # Cleanup - none
 
-    def test_inizialization_of_search_from_to_level(
+    def test_initialisation_of_search_from_instrument_url_and_not_matching_source_id(
+        self,
+        mocked_datavault_api_instrument_level,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/WATCHLIST"
+        credentials = ("username", "password")
+        source_id = "945"
+        # Exercise
+        stack, leaf_nodes = crawler.initialise_search(url, credentials, session, source_id)
+        # Verify
+        assert stack == []
+        assert leaf_nodes == []
+        # Cleanup - none
+
+    def test_initialisation_of_search_from_instrument_url_and_matching_source_id(
+        self,
+        mocked_datavault_api_instrument_level,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/WATCHLIST"
+        credentials = ("username", "password")
+        source_id = "367"
+        # Exercise
+        stack, leaf_nodes = crawler.initialise_search(url, credentials, session, source_id)
+        # Verify
+        assert stack == []
+        assert leaf_nodes == [
+            DiscoveredFileInfo(
+                file_name="WATCHLIST_367_20200716.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/"
+                    "WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
+                ),
+                source="367",
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            )
+        ]
+        # Cleanup - none
+
+    def test_inizialization_of_search_from_top_level(
         self,
         mocked_top_level_datavault_api,
     ):
@@ -124,7 +167,6 @@ class TestInitializeSearch:
         expected_leaf_nodes = []
         assert stack == expected_stack
         assert leaf_nodes == expected_leaf_nodes
-
 
 
 class TestCreateNodeUrl:
