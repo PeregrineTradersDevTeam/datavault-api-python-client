@@ -18,7 +18,7 @@ from datavault_api_client.data_structures import (
 def generate_file_path_matching_datavault_structure(
     path_to_data_folder: str,
     file_name: str,
-    datavault_download_url: str
+    datavault_download_url: str,
 ) -> pathlib.Path:
     """Generates a file path that follows the directory structure of the Datavault API.
 
@@ -49,3 +49,19 @@ def generate_file_path_matching_datavault_structure(
         "/".join(relevant_path_components),
     )
     return directory_path.joinpath(file_name)
+
+
+def convert_mib_to_bytes(size_in_mib: float) -> int:
+    """Converts a size expressed in MiB to Bytes.
+
+    Parameters
+    ----------
+    size_in_mib: float
+        A file size in MiB.
+
+    Returns
+    -------
+    int
+        The size in Bytes equivalent to the passed size in MiB.
+    """
+    return round(size_in_mib * (1024**2))
