@@ -1,5 +1,6 @@
 import pytest
 import requests
+
 from datavault_api_client import crawler
 from datavault_api_client.data_structures import DiscoveredFileInfo
 
@@ -168,6 +169,18 @@ class TestInitializeSearch:
         assert stack == expected_stack
         assert leaf_nodes == expected_leaf_nodes
 
+    def test_initialisation_behaviour_with_error_code(
+        self,
+        mocked_top_level_datavault_api_failed_request,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list"
+        credentials = ("username", "password")
+        # Exercise
+        with pytest.raises(requests.exceptions.HTTPError):
+            crawler.initialise_search(url, credentials, session)
+
 
 class TestCreateNodeUrl:
     def test_creation_of_node_url(self):
@@ -178,6 +191,172 @@ class TestCreateNodeUrl:
         # Verify
         expected_url = "https://api.icedatavault.icedataservices.com/v2/list/2020/11/30/S945"
         assert node_url == expected_url
+        # Cleanup - none
+
+
+class TestTraverseApiDirectoryTree:
+    def test_traversal_of_api_directory_tree(
+        self,
+        mocked_datavault_api_single_source_single_day,
+        mocked_set_of_files_available_to_download_single_source_single_day,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list"
+        credentials = ("username", "password")
+        leaf_nodes = []
+        # Exercise
+        discovered_files = crawler.traverse_api_directory_tree(
+            session,
+            credentials,
+            session.get(url).json(),
+            leaf_nodes
+        )
+        # Verify
+        expected_files = mocked_set_of_files_available_to_download_single_source_single_day
+        assert (
+            discovered_files.sort(key=lambda x: x.file_name)
+            == expected_files.sort(key=lambda x: x.file_name)
+        )
+        # Cleanup - none
+
+    def test_traversal_of_api_directory_tree_with_not_matching_source_id(
+        self,
+        mocked_datavault_api_single_source_single_day,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list"
+        credentials = ("username", "password")
+        leaf_nodes = []
+        source_id = "673"
+        # Exercise
+        discovered_files = crawler.traverse_api_directory_tree(
+            session,
+            credentials,
+            session.get(url).json(),
+            leaf_nodes,
+            source_id
+        )
+        # Verify
+        assert discovered_files == []
+        # Cleanup - none
+
+    def test_traversal_of_api_directory_tree_with_matching_source_id(
+        self,
+        mocked_datavault_api_multiple_sources_single_day,
+        mocked_set_of_files_available_to_download_multiple_sources_single_day,
+    ):
+        # Setup
+        session = requests.Session()
+        url = "https://api.icedatavault.icedataservices.com/v2/list"
+        credentials = ("username", "password")
+        leaf_nodes = []
+        source_id = "367"
+        # Exercise
+        discovered_files = crawler.traverse_api_directory_tree(
+            session,
+            credentials,
+            session.get(url).json(),
+            leaf_nodes,
+            source_id
+        )
+        discovered_files.sort(key=lambda x: x.file_name)
+        # Verify
+        expected_files = [
+            file for file in mocked_set_of_files_available_to_download_multiple_sources_single_day
+            if file.source == source_id
+        ]
+        expected_files.sort(key=lambda x: x.file_name)
+        assert discovered_files == expected_files
+        # Cleanup - none
+
+    def test_traversal_of_api_directory_tree_with_empty_stack(
+        self
+    ):
+        # Setup
+        session = requests.Session()
+        credentials = ("username", "password")
+        stack = []
+        leaf_nodes = []
+        # Exercise
+        discovered_files = crawler.traverse_api_directory_tree(
+            session,
+            credentials,
+            stack,
+            leaf_nodes
+        )
+        # Verify
+        # expected_files = [
+        #     file for file in mocked_set_of_files_available_to_download_multiple_sources_single_day
+        #     if file.source == source_id
+        # ]
+        assert discovered_files == []
+        # Cleanup - none
+
+    def test_traversal_of_api_directory_tree_with_failed_request_down_the_line(
+        self,
+        mocked_datavault_api_with_down_the_line_failed_request,
+    ):
+        # Setup
+        session = requests.Session()
+        credentials = ("username", "password")
+        stack = [
+            {
+                'name': '2020',
+                'parent': '/v2/list',
+                'url': '/v2/list/2020',
+                'size': 0,
+                'createdAt': '2020-01-01T00:00:00',
+                'updatedAt': '2020-12-02T00:00:00',
+                'writable': False,
+                'directory': True,
+            },
+        ]
+        leaf_nodes = []
+        # Exercise
+        # Verify
+        with pytest.raises(requests.exceptions.HTTPError):
+            crawler.traverse_api_directory_tree(session, credentials, stack, leaf_nodes)
+        # Cleanup - none
+
+    def test_traversal_of_api_directory_with_repeated_node_in_stack(
+        self,
+        mocked_datavault_api_with_repeated_node
+    ):
+        # Setup
+        session = requests.Session()
+        credentials = ("username", "password")
+        stack = [
+            {
+                'name': '2020',
+                'parent': '/v2/list',
+                'url': '/v2/list/2020',
+                'size': 0,
+                'createdAt': '2020-01-01T00:00:00',
+                'updatedAt': '2020-12-02T00:00:00',
+                'writable': False,
+                'directory': True,
+            },
+        ]
+        leaf_nodes = []
+        # Exercise
+        discovered_instruments = crawler.traverse_api_directory_tree(
+            session, credentials, stack, leaf_nodes
+        )
+        # Verify
+        assert discovered_instruments == [
+            DiscoveredFileInfo(
+                file_name='COREREF_945_20201201.txt.bz2',
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/01/S945/CORE/"
+                    "20201201-S945_CORE_ALL_0_0"
+                ),
+                source="945",
+                size=15680,
+                md5sum='c9cc20020def775933be0be9690a9b5a',
+            )
+        ]
         # Cleanup - none
 
 
