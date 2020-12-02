@@ -157,3 +157,32 @@ def process_raw_download_info(
         md5sum=raw_download_info.md5sum,
         is_partitioned=check_if_partitioned(raw_download_info.size, partition_size_in_mib)
     )
+
+
+def process_all_discovered_files_info(
+    discovered_files_info: List[DiscoveredFileInfo],
+    path_to_data_directory: str,
+    partition_size_in_mib: float
+) -> List[DownloadDetails]:
+    """Process the raw download details of all the files discovered by the crawler.
+
+    Parameters
+    ----------
+    discovered_files_info: List[DiscoveredFileInfo]
+        The list of DiscoveredFileInfo named-tuples produced by the DataVault crawler and
+        containing the raw download information of each discovered file.
+    path_to_data_directory: str
+        The path to the directory where the data will be downloaded.
+    partition_size_in_mib: float
+        The size of the partitions in MiB.
+
+    Returns
+    -------
+    List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing all the information
+        necessary to download a specific discovered file.
+    """
+    return [
+        process_raw_download_info(file_info, path_to_data_directory, partition_size_in_mib)
+        for file_info in discovered_files_info
+    ]
