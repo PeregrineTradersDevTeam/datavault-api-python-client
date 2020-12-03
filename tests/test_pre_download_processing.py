@@ -287,3 +287,58 @@ class TestCalculateListOfPartitionLowerExtremities:
         ]
         assert calculated_list_of_upper_extremities == correct_list_of_upper_extremities
         # Cleanup - none
+
+
+class TestCalculateListOfPartitionExtremities:
+    def test_calculation_of_partition_extremities(self):
+        # Setup
+        file_size = 61663360
+        size_of_partition_in_mib = 5.0
+        # Exercise
+        calculated_partition_extremities = pdp.calculate_list_of_partition_extremities(
+            file_size, size_of_partition_in_mib
+        )
+        # Verify
+        correct_partition_extremities = [
+            {"start": 0, "end": 5242880},
+            {"start": 5242881, "end": 10485760},
+            {"start": 10485761, "end": 15728640},
+            {"start": 15728641, "end": 20971520},
+            {"start": 20971521, "end": 26214400},
+            {"start": 26214401, "end": 31457280},
+            {"start": 31457281, "end": 36700160},
+            {"start": 36700161, "end": 41943040},
+            {"start": 41943041, "end": 47185920},
+            {"start": 47185921, "end": 52428800},
+            {"start": 52428801, "end": 57671680},
+            {"start": 57671681, "end": 61663360},
+        ]
+        assert calculated_partition_extremities == correct_partition_extremities
+        # Cleanup - none
+
+    def test_calculation_of_partition_extremities_file_size_multiple_of_partition_size(
+        self,
+    ):
+        # Setup
+        file_size = 57671680
+        size_of_partition_in_mib = 5.0
+        # Exercise
+        calculated_partition_extremities = pdp.calculate_list_of_partition_extremities(
+            file_size, size_of_partition_in_mib
+        )
+        # Verify
+        correct_partition_extremities = [
+            {"start": 0, "end": 5242880},
+            {"start": 5242881, "end": 10485760},
+            {"start": 10485761, "end": 15728640},
+            {"start": 15728641, "end": 20971520},
+            {"start": 20971521, "end": 26214400},
+            {"start": 26214401, "end": 31457280},
+            {"start": 31457281, "end": 36700160},
+            {"start": 36700161, "end": 41943040},
+            {"start": 41943041, "end": 47185920},
+            {"start": 47185921, "end": 52428800},
+            {"start": 52428801, "end": 57671680},
+        ]
+        assert calculated_partition_extremities == correct_partition_extremities
+        # Cleanup - none
