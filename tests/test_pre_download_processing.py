@@ -342,3 +342,25 @@ class TestCalculateListOfPartitionExtremities:
         ]
         assert calculated_partition_extremities == correct_partition_extremities
         # Cleanup - none
+
+
+class TestFormatQueryString:
+    @pytest.mark.parametrize(
+        "parameters_to_encode, correct_query_string",
+        [
+            ({"start": 0, "end": 943718}, "start=0&end=943718"),
+            ({"start": 9437181, "end": 10380898}, "start=9437181&end=10380898"),
+            ({"start": 24536669, "end": 25217299}, "start=24536669&end=25217299"),
+        ],
+    )
+    def test_generation_of_query_string(
+        self, parameters_to_encode, correct_query_string
+    ):
+        # Setup - none
+        # Exercise
+        generated_query_string = pdp.format_query_string(
+            parameters_to_encode
+        )
+        # Verify
+        assert generated_query_string == correct_query_string
+        # Cleanup - none
