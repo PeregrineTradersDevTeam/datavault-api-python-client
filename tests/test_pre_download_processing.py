@@ -409,19 +409,23 @@ class TestGeneratePartitionDownloadUrl:
         "partition_extremities, correct_partition_download_url",
         [
             (
-                {"start": 0, "end": 943718},
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
-                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=0&end=943718",
+                {"start": 0, "end": 943718}, (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                    "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=0&end=943718"
+                ),
             ),
             (
-                {"start": 9437181, "end": 10380898},
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
-                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=9437181&end=10380898",
+                {"start": 9437181, "end": 10380898}, (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                    "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=9437181&end=10380898"
+                ),
             ),
             (
-                {"start": 24536669, "end": 25217299},
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
-                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=24536669&end=25217299",
+                {"start": 24536669, "end": 25217299}, (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                    "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0"
+                    "?start=24536669&end=25217299"
+                ),
             ),
         ],
     )
@@ -459,4 +463,66 @@ class TestGeneratePartitionDownloadUrl:
             "20200722-S905_WATCHLIST_username_0_0?start=24536669&end=25217299"
         )
         assert generated_partition_download_url == correct_partition_download_url
+        # Cleanup - none
+
+
+class TestGeneratePathToFilePartition:
+    @pytest.mark.parametrize(
+        "partition_index, correct_path_to_file_partition",
+        [
+            (
+                0,
+                pathlib.Path(__file__).resolve().parent
+                / "Data"
+                / "2020"
+                / "07"
+                / "22"
+                / "S905"
+                / "WATCHLIST"
+                / "WATCHLIST_905_20200722_1.txt",
+            ),
+            (
+                1,
+                pathlib.Path(__file__).resolve().parent
+                / "Data"
+                / "2020"
+                / "07"
+                / "22"
+                / "S905"
+                / "WATCHLIST"
+                / "WATCHLIST_905_20200722_2.txt",
+            ),
+            (
+                32,
+                pathlib.Path(__file__).resolve().parent
+                / "Data"
+                / "2020"
+                / "07"
+                / "22"
+                / "S905"
+                / "WATCHLIST"
+                / "WATCHLIST_905_20200722_33.txt",
+            ),
+        ],
+    )
+    def test_generation_of_path_to_file_partition(
+        self, partition_index, correct_path_to_file_partition
+    ):
+        # Setup
+        path_to_file = (
+            pathlib.Path(__file__).resolve().parent
+            / "Data"
+            / "2020"
+            / "07"
+            / "22"
+            / "S905"
+            / "WATCHLIST"
+            / "WATCHLIST_905_20200722.txt.bz2"
+        )
+        # Exercise
+        generated_path_to_file_partition = pdp.generate_path_to_file_partition(
+            path_to_file, partition_index
+        )
+        # Verify
+        assert generated_path_to_file_partition == correct_path_to_file_partition
         # Cleanup - none
