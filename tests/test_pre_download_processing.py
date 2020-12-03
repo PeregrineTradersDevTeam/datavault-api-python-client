@@ -626,3 +626,32 @@ class TestGenerateListOfWholeFilesAndPartitionsDownloadDetails:
             == mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
         )
         # Cleanup - none
+
+
+class TestPrepareDownloadManifests:
+    def test_preparation_of_data_for_download(
+        self,
+        mocked_set_of_files_available_to_download_single_source_single_day,
+        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
+        mocked_list_of_whole_files_download_details_single_source_single_day,
+    ):
+        # Setup
+        path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
+        # Exercise
+        (
+            whole_files_download_details,
+            whole_files_and_partitions_download_details,
+        ) = pdp.prepare_download_manifests(
+            mocked_set_of_files_available_to_download_single_source_single_day,
+            path_to_data_folder,
+        )
+        # Verify
+        assert (
+            whole_files_download_details
+            == mocked_list_of_whole_files_download_details_single_source_single_day
+        )
+        assert (
+            whole_files_and_partitions_download_details
+            == mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
+        )
+        # Cleanup - none
