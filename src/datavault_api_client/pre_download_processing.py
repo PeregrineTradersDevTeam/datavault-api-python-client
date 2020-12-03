@@ -337,7 +337,7 @@ def format_query_string(parameters_to_encode: Dict[str, int]) -> str:
     """Encodes a partition's extremities dictionary into a query string.
 
     The query string is formatted as:
-        ?start=<partition-lower-extremity>&end=<partition-upper-extremity>
+        start=<partition-lower-extremity>&end=<partition-upper-extremity>
 
     Parameters
     ----------
@@ -351,3 +351,23 @@ def format_query_string(parameters_to_encode: Dict[str, int]) -> str:
         A query string.
     """
     return urllib.parse.urlencode(parameters_to_encode)
+
+
+def join_base_url_and_query_string(base_url: str, query_string: str) -> str:
+    """Joins a query string to a base URL.
+
+    Parameters
+    ----------
+    base_url: str
+        The URL to which the query string is to be attached to.
+    query_string: str
+        A valid query string.
+
+    Returns
+    -------
+    str
+        The base url with attached the query string.
+    """
+    if base_url.endswith("/"):
+        base_url = base_url[:-1]
+    return f"{base_url}?{query_string}"
