@@ -240,7 +240,7 @@ def calculate_list_of_partition_upper_extremities(
 ) -> List[int]:
     """Calculates the upper partition's extremities and collects them in a list.
 
-    The upper partition extremities indicates the position, in bytes, where a partition
+    The upper partition's extremities indicates the position, in bytes, where a partition
     ends.
 
     Parameters
@@ -267,3 +267,32 @@ def calculate_list_of_partition_upper_extremities(
 
     return list_of_upper_extremities
 
+
+def calculate_list_of_partition_lower_extremities(
+    file_size_in_bytes: int,
+    partition_size_in_mib: float,
+) -> List[int]:
+    """Calculates the lower partition's extremities and collects them in a list.
+
+    The lower partition's extremities indicates the position, in bytes, where a partition
+    starts.
+
+    Parameters
+    ----------
+    file_size_in_bytes: int
+        The size in Bytes of the file.
+    partition_size_in_mib: float
+        The size of the partitions in MiB
+
+    Returns
+    -------
+    List[int]
+        A list of bytes indicating the lower extremities of each partition in a file.
+    """
+    list_of_lower_extremities = [0]
+    list_of_lower_extremities += [
+        upper_extremity + 1 for upper_extremity in calculate_list_of_partition_upper_extremities(
+            file_size_in_bytes, partition_size_in_mib,
+        ) if upper_extremity < file_size_in_bytes
+    ]
+    return list_of_lower_extremities
