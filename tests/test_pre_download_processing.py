@@ -526,3 +526,21 @@ class TestGeneratePathToFilePartition:
         # Verify
         assert generated_path_to_file_partition == correct_path_to_file_partition
         # Cleanup - none
+
+
+class TestCreateListOfFilePartitionsDownloadInfo:
+    def test_generation_list_of_partitions_download_info(
+        self,
+        mocked_download_details_single_instrument,
+        mocked_list_of_file_partitions_single_instrument,
+    ):
+        # Setup
+        file_specific_download_details = mocked_download_details_single_instrument
+        partition_size_in_mb = 5.0
+        # Exercise
+        partitions_download_info = pdp.create_list_of_file_specific_partition_download_info(
+            file_specific_download_details, partition_size_in_mb
+        )
+        # Verify
+        assert partitions_download_info == mocked_list_of_file_partitions_single_instrument
+        # Cleanup - none
