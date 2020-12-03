@@ -139,23 +139,41 @@ class TestProcessAllDiscoveredFilesInfo:
 
 class TestCalculateNumberOfSameSizePartitions:
     @pytest.mark.parametrize(
-        "file_byte_size, partition_size_in_mb, correct_number_of_same_size_partitions",
+        "file_size_in_bytes, partition_size_in_mib, correct_number_of_same_size_partitions",
         [(57671680, 5.0, 11), (100145874, 4.2, 22)],
     )
     def test_calculation_of_number_of_same_size_partitions(
         self,
-        file_byte_size,
-        partition_size_in_mb,
+        file_size_in_bytes,
+        partition_size_in_mib,
         correct_number_of_same_size_partitions,
     ):
         # Setup - none
         # Exercise
         calculated_number_of_same_size_partitions = pdp.calculate_number_of_same_size_partitions(
-            file_byte_size, partition_size_in_mb
+            file_size_in_bytes, partition_size_in_mib
         )
         # Verify
         assert (
             calculated_number_of_same_size_partitions
             == correct_number_of_same_size_partitions
         )
+        # Cleanup - none
+
+
+class TestCalculateSizeOfLastPartition:
+    @pytest.mark.parametrize(
+        "file_size_in_bytes, partition_size_in_mib, correct_size_of_last_partition",
+        [(57671680, 5.0, 0), (100145874, 4.7, 1579734)],
+    )
+    def test_calculation_size_of_last_partition(
+        self, file_size_in_bytes, partition_size_in_mib, correct_size_of_last_partition
+    ):
+        # Setup - none
+        # Exercise
+        calculated_size_of_last_partition = pdp.calculate_size_of_last_partition(
+            file_size_in_bytes, partition_size_in_mib,
+        )
+        # Verify
+        assert calculated_size_of_last_partition == correct_size_of_last_partition
         # Cleanup - none
