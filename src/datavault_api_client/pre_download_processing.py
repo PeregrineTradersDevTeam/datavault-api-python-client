@@ -371,3 +371,29 @@ def join_base_url_and_query_string(base_url: str, query_string: str) -> str:
     if base_url.endswith("/"):
         base_url = base_url[:-1]
     return f"{base_url}?{query_string}"
+
+
+def create_partition_download_url(
+    whole_file_download_url: str,
+    partition_extremities: Dict[str, int]
+) -> str:
+    """Creates a partition-specific download URL.
+
+    The created URL allows to download a specific partition of a file.
+
+    Parameters
+    ----------
+    whole_file_download_url: str
+        The download URL that is used to download a specific file.
+    partition_extremities: Dict[str, int]
+        A dictionary containing the lower and upper extremities of the partition to
+        encode.
+
+    Returns
+    -------
+    str
+        The download URL for a specific partition.
+    """
+    return join_base_url_and_query_string(
+        whole_file_download_url, format_query_string(partition_extremities)
+    )
