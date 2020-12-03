@@ -402,3 +402,61 @@ class TestJoinBaseUrlAndQueryString:
         # Verify
         assert generated_url == correct_encoded_url
         # Cleanup - none
+
+
+class TestGeneratePartitionDownloadUrl:
+    @pytest.mark.parametrize(
+        "partition_extremities, correct_partition_download_url",
+        [
+            (
+                {"start": 0, "end": 943718},
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=0&end=943718",
+            ),
+            (
+                {"start": 9437181, "end": 10380898},
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=9437181&end=10380898",
+            ),
+            (
+                {"start": 24536669, "end": 25217299},
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=24536669&end=25217299",
+            ),
+        ],
+    )
+    def test_generation_of_partition_download_url(
+        self, partition_extremities, correct_partition_download_url
+    ):
+        # Setup
+        whole_file_download_url = (
+            "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+            "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0"
+        )
+        # Exercise
+        generated_partition_download_url = pdp.create_partition_download_url(
+            whole_file_download_url, partition_extremities
+        )
+        # Verify
+        assert generated_partition_download_url == correct_partition_download_url
+        # Cleanup - none
+
+    def test_generation_of_partition_url_when_base_url_has_trailing_slash(self):
+        # Setup
+        whole_file_download_url = (
+            "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+            "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0/"
+        )
+        partition_extremities = {"start": 24536669, "end": 25217299}
+        # Exercise
+        generated_partition_download_url = pdp.create_partition_download_url(
+            whole_file_download_url, partition_extremities
+        )
+        # Verify
+        correct_partition_download_url = (
+            "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+            "S905/WATCHLIST/"
+            "20200722-S905_WATCHLIST_username_0_0?start=24536669&end=25217299"
+        )
+        assert generated_partition_download_url == correct_partition_download_url
+        # Cleanup - none
