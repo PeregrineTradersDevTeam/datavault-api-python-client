@@ -136,3 +136,26 @@ class TestProcessAllDiscoveredFilesInfo:
         )
         # Cleanup - none
 
+
+class TestCalculateNumberOfSameSizePartitions:
+    @pytest.mark.parametrize(
+        "file_byte_size, partition_size_in_mb, correct_number_of_same_size_partitions",
+        [(57671680, 5.0, 11), (100145874, 4.2, 22)],
+    )
+    def test_calculation_of_number_of_same_size_partitions(
+        self,
+        file_byte_size,
+        partition_size_in_mb,
+        correct_number_of_same_size_partitions,
+    ):
+        # Setup - none
+        # Exercise
+        calculated_number_of_same_size_partitions = pdp.calculate_number_of_same_size_partitions(
+            file_byte_size, partition_size_in_mb
+        )
+        # Verify
+        assert (
+            calculated_number_of_same_size_partitions
+            == correct_number_of_same_size_partitions
+        )
+        # Cleanup - none
