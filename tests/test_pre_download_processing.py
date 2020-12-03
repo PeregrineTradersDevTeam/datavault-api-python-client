@@ -544,3 +544,62 @@ class TestCreateListOfFilePartitionsDownloadInfo:
         # Verify
         assert partitions_download_info == mocked_list_of_file_partitions_single_instrument
         # Cleanup - none
+
+
+class TestFilterFilesToSplit:
+    def test_filtering_of_files_to_split(
+        self, mocked_download_details_multiple_sources_single_day
+    ):
+        # Setup
+        whole_files_download_details = (
+            mocked_download_details_multiple_sources_single_day
+        )
+        # Exercise
+        files_to_partition = pdp.filter_files_to_split(
+            whole_files_download_details
+        )
+        # Verify
+        expected_files_to_partition = [
+            DownloadDetails(
+                file_name="CROSSREF_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/CROSS/"
+                    "20200721-S207_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                "Data", "2020", "07", "21", "S207", "CROSS", "CROSSREF_207_20200721.txt.bz2",
+                ),
+                size=14690557,
+                md5sum="f2683cd87a7b29f3b8776373d56a8456",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/"
+                    "WATCHLIST/20200721-S207_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "07", "21", "S207", "WATCHLIST",
+                    "WATCHLIST_207_20200721.txt.bz2",
+                ),
+                size=72293374,
+                md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/"
+                    "WATCHLIST/20200721-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                "Data", "2020", "07", "21", "S367", "WATCHLIST", "WATCHLIST_367_20200721.txt.bz2",
+                ),
+                size=82451354,
+                md5sum="62df718ef5eb5f9f1ea3f6ea1f826c30",
+                is_partitioned=True,
+            ),
+        ]
+        assert files_to_partition == expected_files_to_partition
+        # Cleanup - none
