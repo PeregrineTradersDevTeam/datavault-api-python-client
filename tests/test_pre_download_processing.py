@@ -364,3 +364,41 @@ class TestFormatQueryString:
         # Verify
         assert generated_query_string == correct_query_string
         # Cleanup - none
+
+
+class TestJoinBaseUrlAndQueryString:
+    @pytest.mark.parametrize(
+        "query_string, correct_encoded_url",
+        [
+            (
+                "start=0&end=943718",
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=0&end=943718",
+            ),
+            (
+                "start=9437181&end=10380898",
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=9437181&end=10380898",
+            ),
+            (
+                "start=24536669&end=25217299",
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+                "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0?start=24536669&end=25217299",
+            ),
+        ],
+    )
+    def test_generation_of_url_with_query_string(
+        self, query_string, correct_encoded_url
+    ):
+        # Setup
+        base_url = (
+            "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/"
+            "S905/WATCHLIST/20200722-S905_WATCHLIST_username_0_0"
+        )
+        # Exercise
+        generated_url = pdp.join_base_url_and_query_string(
+            base_url, query_string
+        )
+        # Verify
+        assert generated_url == correct_encoded_url
+        # Cleanup - none
