@@ -302,6 +302,24 @@ def calculate_list_of_partition_extremities(
     file_size_in_bytes: int,
     partition_size_in_mib: float,
 ) -> List[Dict[str, int]]:
+    """Calculates the extremities of each partition and collects them in a list of dictionaries.
+
+    Each dictionary contains a 'start' and 'end' key indicating the position in bytes of
+    the starting and ending extremities of each partition.
+
+    Parameters
+    ----------
+    file_size_in_bytes: int
+        The size in Bytes of the file.
+    partition_size_in_mib: float
+        The size of the partitions in MiB
+
+    Returns
+    -------
+    List[Dict[str, int]]
+        A list of dictionaries containing the starting and ending extremities of each
+        partition.
+    """
     return [
         {"start": extremities[0], "end": extremities[1]}
         for extremities in zip(
@@ -313,3 +331,23 @@ def calculate_list_of_partition_extremities(
             ),
         )
     ]
+
+
+def format_query_string(parameters_to_encode: Dict[str, int]) -> str:
+    """Encodes a partition's extremities dictionary into a query string.
+
+    The query string is formatted as:
+        ?start=<partition-lower-extremity>&end=<partition-upper-extremity>
+
+    Parameters
+    ----------
+    parameters_to_encode: Dict[str, int]
+        A dictionary containing the lower and upper extremities of a partition, with the
+        dictionary keys named 'start' and 'end'.
+
+    Returns
+    -------
+    str
+        A query string.
+    """
+    return urllib.parse.urlencode(parameters_to_encode)
