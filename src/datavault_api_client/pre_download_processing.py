@@ -296,3 +296,20 @@ def calculate_list_of_partition_lower_extremities(
         ) if upper_extremity < file_size_in_bytes
     ]
     return list_of_lower_extremities
+
+
+def calculate_list_of_partition_extremities(
+    file_size_in_bytes: int,
+    partition_size_in_mib: float,
+) -> List[Dict[str, int]]:
+    return [
+        {"start": extremities[0], "end": extremities[1]}
+        for extremities in zip(
+            calculate_list_of_partition_lower_extremities(
+                file_size_in_bytes, partition_size_in_mib,
+            ),
+            calculate_list_of_partition_upper_extremities(
+                file_size_in_bytes, partition_size_in_mib,
+            ),
+        )
+    ]
