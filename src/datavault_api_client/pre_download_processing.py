@@ -476,3 +476,22 @@ def create_list_of_file_specific_partition_download_info(
         )
         for partition_index, extremities in enumerate(file_partitions)
     ]
+
+
+def filter_files_to_split(
+    whole_files_download_info: List[DownloadDetails]
+) -> List[DownloadDetails]:
+    """Creates a list of files that are eligible to be split in multiple partitions.
+
+    Parameters
+    ----------
+    whole_files_download_info: List[DownloadDetails]
+        A list of DownloadDetails named tuples containing the download information of
+        all the files that we want to filter.
+    Returns
+    -------
+    List[DownloadDetails]
+        A list of DownloadDetails named tuples of all those files that had the
+        is_partitioned flag set equal to True.
+    """
+    return [file for file in whole_files_download_info if file.is_partitioned is True]
