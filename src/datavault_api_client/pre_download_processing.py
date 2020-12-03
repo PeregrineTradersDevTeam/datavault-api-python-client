@@ -87,8 +87,9 @@ def calculate_multi_part_threshold(partition_size_in_mib: float) -> int:
         The multi-part threshold in Bytes.
     """
     return round(
-        (convert_mib_to_bytes(partition_size_in_mib) * 2) +
-        (0.8 * convert_mib_to_bytes(partition_size_in_mib))
+        (convert_mib_to_bytes(partition_size_in_mib) * 2) + (0.8 * convert_mib_to_bytes(
+            partition_size_in_mib,
+        )),
     )
 
 
@@ -155,14 +156,14 @@ def process_raw_download_info(
         ),
         size=raw_download_info.size,
         md5sum=raw_download_info.md5sum,
-        is_partitioned=check_if_partitioned(raw_download_info.size, partition_size_in_mib)
+        is_partitioned=check_if_partitioned(raw_download_info.size, partition_size_in_mib),
     )
 
 
 def process_all_discovered_files_info(
     discovered_files_info: List[DiscoveredFileInfo],
     path_to_data_directory: str,
-    partition_size_in_mib: float
+    partition_size_in_mib: float,
 ) -> List[DownloadDetails]:
     """Process the raw download details of all the files discovered by the crawler.
 
@@ -186,3 +187,25 @@ def process_all_discovered_files_info(
         process_raw_download_info(file_info, path_to_data_directory, partition_size_in_mib)
         for file_info in discovered_files_info
     ]
+
+
+def calculate_number_of_same_size_partitions(
+    file_size_in_bytes: int,
+    partition_size_in_mib: float,
+) -> int:
+    """Calculates the number of same size partitions given file size and partition size.
+
+    Parameters
+    ----------
+    file_size_in_bytes: int
+        The size in Bytes of the file.
+    partition_size_in_mib: float
+        The size of the partitions in MiB.
+
+    Returns
+    -------
+    int
+        The number of same size partitions in the file.
+
+    """
+    return file_size_in_bytes // convert_mib_to_bytes(partition_size_in_mib)
