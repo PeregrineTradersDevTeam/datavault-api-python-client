@@ -5,7 +5,7 @@ DiscoveredFileInfo named tuples that is produced by the crawler, and prepare the
 manifest that is used by the downloading functions as a reference.
 """
 import pathlib
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Tuple, List, Union
 import urllib.parse
 
 from datavault_api_client.data_structures import (
@@ -375,7 +375,7 @@ def join_base_url_and_query_string(base_url: str, query_string: str) -> str:
 
 def create_partition_download_url(
     whole_file_download_url: str,
-    partition_extremities: Dict[str, int]
+    partition_extremities: Dict[str, int],
 ) -> str:
     """Creates a partition-specific download URL.
 
@@ -395,7 +395,7 @@ def create_partition_download_url(
         The download URL for a specific partition.
     """
     return join_base_url_and_query_string(
-        whole_file_download_url, format_query_string(partition_extremities)
+        whole_file_download_url, format_query_string(partition_extremities),
     )
 
 
@@ -433,7 +433,7 @@ def generate_path_to_file_partition(
 
 def create_list_of_file_specific_partition_download_info(
     file_specific_download_info: DownloadDetails,
-    partition_size_in_mib: float
+    partition_size_in_mib: float,
 ) -> List[PartitionDownloadDetails]:
     """Creates a file-specific list of PartitionDownloadDetails named-tuples.
 
@@ -460,7 +460,7 @@ def create_list_of_file_specific_partition_download_info(
     """
     file_partitions = calculate_list_of_partition_extremities(
         file_specific_download_info.size,
-        partition_size_in_mib
+        partition_size_in_mib,
     )
     return [
         PartitionDownloadDetails(
@@ -479,7 +479,7 @@ def create_list_of_file_specific_partition_download_info(
 
 
 def filter_files_to_split(
-    whole_files_download_info: List[DownloadDetails]
+    whole_files_download_info: List[DownloadDetails],
 ) -> List[DownloadDetails]:
     """Creates a list of files that are eligible to be split in multiple partitions.
 
@@ -488,6 +488,7 @@ def filter_files_to_split(
     whole_files_download_info: List[DownloadDetails]
         A list of DownloadDetails named tuples containing the download information of
         all the files that we want to filter.
+
     Returns
     -------
     List[DownloadDetails]
@@ -499,7 +500,7 @@ def filter_files_to_split(
 
 def generate_whole_files_and_partitions_download_manifest(
     whole_files_download_info: List[DownloadDetails],
-    partition_size_in_mib: float
+    partition_size_in_mib: float,
 ) -> List[Union[DownloadDetails, PartitionDownloadDetails]]:
     """Generates the download manifest containing whole files and partitions download information.
 
@@ -547,3 +548,39 @@ def generate_whole_files_and_partitions_download_manifest(
             for partition_download_info in partitions_download_info:
                 whole_files_and_partition_download_manifest.append(partition_download_info)
     return whole_files_and_partition_download_manifest
+
+
+def prepare_download_manifests(
+    discovered_files_info: List[DiscoveredFileInfo],
+    path_to_data_folder: str,
+    partition_size_in_mib: float = 5.0,
+) -> Tuple[List[DownloadDetails], List[Union[DownloadDetails, PartitionDownloadDetails]]]:
+    """Generates the whole-files and the whole-files and partitions download manifests.
+
+    Parameters
+    ----------
+    discovered_files_info: List[DiscoveredFileInfo]
+        A list of DiscoveredFileInfo named-tuples.
+    path_to_data_folder: str
+        The full path to the directory where the data will be downloaded.
+    partition_size_in_mib: float
+        The size of the partitions in MiB. By default is set equal to 5.0 MiB.
+
+    Returns
+    -------
+    Tuple[List[DownloadDetails], List[Union[DownloadDetails, PartitionDownloadDetails]]]
+        A tuple where the first element is a list of DownloadDetails named-tuples (the
+        whole-files download manifest), and the second element is a list of both
+        DownloadDetails and PartitionDownloadDetails named-tuples (the whole-files and
+        partitions download manifest).
+    """
+    whole_files_download_manifest = process_all_discovered_files_info(
+        discovered_files_info,
+        path_to_data_folder,
+        partition_size_in_mib,
+    )
+    files_and_partitions_download_manifest = generate_whole_files_and_partitions_download_manifest(
+        whole_files_download_manifest,
+        partition_size_in_mib,
+    )
+    return whole_files_download_manifest, files_and_partitions_download_manifest
