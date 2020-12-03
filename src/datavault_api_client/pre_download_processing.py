@@ -212,4 +212,58 @@ def calculate_number_of_same_size_partitions(
 
 
 def calculate_size_of_last_partition(file_size_in_bytes: int, partition_size_in_mib: float) -> int:
+    """Calculates the size of the last file's partition.
+
+    The last partition is defined as the bytes that exceed the n same-size partitions in
+    which a file gets split into, when the n same-size partitions leave a remainder of
+    bytes to cover in a separate partition.
+
+    Parameters
+    ----------
+    file_size_in_bytes: int
+        The size in Bytes of the file.
+    partition_size_in_mib: float
+        The size of the partitions in MiB
+
+    Returns
+    -------
+    int
+        The size in Bytes of the last partition.
+
+    """
     return file_size_in_bytes % convert_mib_to_bytes(partition_size_in_mib)
+
+
+def calculate_list_of_partition_upper_extremities(
+    file_size_in_bytes: int,
+    partition_size_in_mib: float,
+) -> List[int]:
+    """Calculates the upper partition's extremities and collects them in a list.
+
+    The upper partition extremities indicates the position, in bytes, where a partition
+    ends.
+
+    Parameters
+    ----------
+    file_size_in_bytes: int
+        The size in Bytes of the file.
+    partition_size_in_mib: float
+        The size of the partitions in MiB
+
+    Returns
+    -------
+    List[int]
+        A list of bytes indicating the upper extremities of each partition in a file.
+    """
+    list_of_upper_extremities = [
+        convert_mib_to_bytes(partition_size_in_mib) * i
+        for i in range(1, calculate_number_of_same_size_partitions(
+            file_size_in_bytes, partition_size_in_mib,
+        ) + 1)
+    ]
+
+    if calculate_size_of_last_partition(file_size_in_bytes, partition_size_in_mib) != 0:
+        list_of_upper_extremities.append(file_size_in_bytes)
+
+    return list_of_upper_extremities
+
