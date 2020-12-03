@@ -209,3 +209,7 @@ def calculate_number_of_same_size_partitions(
 
     """
     return file_size_in_bytes // convert_mib_to_bytes(partition_size_in_mib)
+
+
+def calculate_size_of_last_partition(file_size_in_bytes: int, partition_size_in_mib: float) -> int:
+    return file_size_in_bytes % convert_mib_to_bytes(partition_size_in_mib)
