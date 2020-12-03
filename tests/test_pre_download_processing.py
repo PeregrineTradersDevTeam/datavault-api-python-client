@@ -603,3 +603,26 @@ class TestFilterFilesToSplit:
         ]
         assert files_to_partition == expected_files_to_partition
         # Cleanup - none
+
+
+class TestGenerateListOfWholeFilesAndPartitionsDownloadDetails:
+    def test_generation_of_mixed_download_details(
+        self,
+        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
+    ):
+        # Setup
+        whole_files_download_details = (
+            mocked_list_of_whole_files_download_details_single_source_single_day
+        )
+        size_of_partitions_in_mb = 5.0
+        # Exercise
+        download_manifest = pdp.generate_whole_files_and_partitions_download_manifest(
+            whole_files_download_details, size_of_partitions_in_mb
+        )
+        # Verify
+        assert (
+            download_manifest
+            == mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
+        )
+        # Cleanup - none
