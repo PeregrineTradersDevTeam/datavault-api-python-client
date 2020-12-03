@@ -429,3 +429,50 @@ def generate_path_to_file_partition(
             f"{path_to_whole_file.suffixes[0]}"
         ),
     )
+
+
+def create_list_of_file_specific_partition_download_info(
+    file_specific_download_info: DownloadDetails,
+    partition_size_in_mib: float
+) -> List[PartitionDownloadDetails]:
+    """Creates a file-specific list of PartitionDownloadDetails named-tuples.
+
+    The PartitionDownloadDetails named-tuples contain partition-specific information that
+    is used in the download phase. In particular, each named-tuple contains the name of
+    the parent file (the file that is partitioned), the partition-specific download url
+    and full path.
+
+    Parameters
+    ----------
+    file_specific_download_info: DownloadDetails
+        A DownloadDetails named tuple containing the file name as given by the DataVault
+        API, the whole-file download URL, the file path, the size, the md5sum digest and
+        the is_partitioned boolean flag.
+    partition_size_in_mib: float
+        The size of the partitions in MiB
+
+    Returns
+    -------
+    List[PartitionDownloadDetails]
+        A list of PartitionDownloadDetails named tuples, each containing the following
+        partition-specific download information: name of the parent file,
+        partition-specific download url, and full path to the partition.
+    """
+    file_partitions = calculate_list_of_partition_extremities(
+        file_specific_download_info.size,
+        partition_size_in_mib
+    )
+    return [
+        PartitionDownloadDetails(
+            parent_file_name=file_specific_download_info.file_name,
+            download_url=create_partition_download_url(
+                file_specific_download_info.download_url,
+                extremities,
+            ),
+            file_path=generate_path_to_file_partition(
+                file_specific_download_info.file_path,
+                partition_index,
+            ),
+        )
+        for partition_index, extremities in enumerate(file_partitions)
+    ]
