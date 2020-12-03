@@ -205,3 +205,85 @@ class TestCalculateListOfPartitionUpperExtremities:
         ]
         assert calculated_list_of_upper_extremities == correct_list_of_upper_extremities
         # Cleanup - none
+
+    def test_calculation_of_upper_extremities_when_file_size_is_multiple_of_partition_size(
+        self,
+    ):
+        # Setup
+        file_size = 57671680
+        partition_size_in_mib = 5.0
+        # Exercise
+        calculated_list_of_upper_extremities = pdp.calculate_list_of_partition_upper_extremities(
+            file_size, partition_size_in_mib
+        )
+        # Verify
+        correct_list_of_upper_extremities = [
+            5242880,
+            10485760,
+            15728640,
+            20971520,
+            26214400,
+            31457280,
+            36700160,
+            41943040,
+            47185920,
+            52428800,
+            57671680,
+        ]
+        assert calculated_list_of_upper_extremities == correct_list_of_upper_extremities
+        # Cleanup - none
+
+
+class TestCalculateListOfPartitionLowerExtremities:
+    def test_calculation_of_lower_extremities(self):
+        # Setup
+        file_size = 61663360
+        partition_size_in_mib = 5.0
+        # Exercise
+        calculated_list_of_upper_extremities = pdp.calculate_list_of_partition_lower_extremities(
+            file_size, partition_size_in_mib
+        )
+        # Verify
+        correct_list_of_upper_extremities = [
+            0,
+            5242881,
+            10485761,
+            15728641,
+            20971521,
+            26214401,
+            31457281,
+            36700161,
+            41943041,
+            47185921,
+            52428801,
+            57671681,
+        ]
+        assert calculated_list_of_upper_extremities == correct_list_of_upper_extremities
+        # Cleanup - none
+
+    def test_calculation_of_lower_extremities_when_file_size_is_multiple_of_partition_size(
+        self,
+    ):
+        # Setup
+        file_size = 57671680
+        partition_size_in_mib = 5.0
+        # Exercise
+        calculated_list_of_upper_extremities = pdp.calculate_list_of_partition_lower_extremities(
+            file_size, partition_size_in_mib
+        )
+        # Verify
+        correct_list_of_upper_extremities = [
+            0,
+            5242881,
+            10485761,
+            15728641,
+            20971521,
+            26214401,
+            31457281,
+            36700161,
+            41943041,
+            47185921,
+            52428801,
+        ]
+        assert calculated_list_of_upper_extremities == correct_list_of_upper_extremities
+        # Cleanup - none
