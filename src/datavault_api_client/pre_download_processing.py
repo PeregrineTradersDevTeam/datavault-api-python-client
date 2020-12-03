@@ -397,3 +397,35 @@ def create_partition_download_url(
     return join_base_url_and_query_string(
         whole_file_download_url, format_query_string(partition_extremities)
     )
+
+
+def generate_path_to_file_partition(
+    path_to_whole_file: pathlib.Path,
+    partition_index: int,
+) -> pathlib.Path:
+    """Creates a partition-specific path from the path of the whole and the partition index.
+
+    Each partition gets a unique name that is a combination of the name of the whole
+    file that the partition belongs to, and the partition index, or the position of the
+    partition relative to the body of the whole file.
+
+    Parameters
+    ----------
+    path_to_whole_file: pathlib.Path
+        The full path to the location where the whole file that is partitioned should be
+        saved.
+    partition_index: int
+        A numerical index that indicated where the specific partition falls in the order
+        of all the same file partitions.
+
+    Returns
+    -------
+    pathlib.Path
+        The partition-specific full path.
+    """
+    return path_to_whole_file.parent.joinpath(
+        (
+            f"{path_to_whole_file.stem.split('.')[0]}_{(partition_index + 1)}"
+            f"{path_to_whole_file.suffixes[0]}"
+        ),
+    )
