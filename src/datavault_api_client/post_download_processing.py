@@ -1,8 +1,8 @@
 """Implements the post-download processing functions."""
 
-import shutil
 import pathlib
-from typing import Any, List, Union, Tuple
+import shutil
+from typing import Any, List, Tuple, Union
 
 from datavault_api_client.data_integrity import get_list_of_failed_downloads
 from datavault_api_client.data_structures import DownloadDetails, PartitionDownloadDetails
@@ -121,11 +121,11 @@ def get_list_of_missing_partitions(
     downloaded_partitions_paths = set(
         get_list_of_downloaded_partitions(
             file_specific_download_details.file_path.parent,
-        )
+        ),
     )
 
     missing_partitions_paths = expected_partitions_paths.difference(
-        downloaded_partitions_paths
+        downloaded_partitions_paths,
     )
 
     return [
@@ -221,19 +221,21 @@ def concatenate_partitions(path_to_output_file: pathlib.Path) -> str:
         The full path of the output file as a string.
     """
     available_partition_files = get_list_of_downloaded_partitions(
-        path_to_output_file.parent
+        path_to_output_file.parent,
     )
     with path_to_output_file.open("wb") as outfile:
         for file_path in available_partition_files:
             with file_path.open("rb") as file_source:
                 shutil.copyfileobj(file_source, outfile, length=(5 * 1024 * 1024))
             file_path.unlink()
-    # for partition_file in available_partition_files:
+    #  for partition_file in available_partition_files:
     #     partition_file.unlink()
     return path_to_output_file.as_posix()
 
 
-def concatenate_each_file_partitions(files_to_concatenate: List[DownloadDetails]) -> None:
+def concatenate_each_file_partitions(
+    files_to_concatenate: List[DownloadDetails],
+) -> List[DownloadDetails]:
     """Concatenates the partition files of all the files with partitions to concatenate.
 
     Parameters
@@ -244,3 +246,60 @@ def concatenate_each_file_partitions(files_to_concatenate: List[DownloadDetails]
     """
     for file in files_to_concatenate:
         concatenate_partitions(file.file_path)
+    return files_to_concatenate
+
+
+def process_downloaded_files(
+    whole_files_download_manifest: List[DownloadDetails],
+    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
+) -> Tuple[List[Any], List[Any]]:
+    """Processes all the downloaded files.
+
+    Parameters
+    ----------
+    whole_files_download_manifest: List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing file-specific download
+        information.
+    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
+        A list of DownloadDetails and PartitionDownloadDetails named-tuples.
+
+    Returns
+    -------
+    Tuple[List[DownloadDetails], List[Union[DownloadDetails, PartitionDownloadDetails]]]
+        If the function finds files with missing partitions or files that fails the
+        data integrity tests, it will return a tuple containing a list of DownloadDetails
+        named-tuples of all those files that needs to be downloaded again, and a list of
+        DownloadDetails and PartitionDownloadDetails containing the list of single-file
+        and partitions download information that needs to be downloaded again. If no
+        missing partitions are found and no file fails the data integrity test, the
+        function will return a tuple containing two empty lists.
+    """
+    whole_files_to_retry = []
+    whole_files_and_partitions_to_retry = []
+
+    (
+        files_with_missing_partitions,
+        missing_partitions) = get_all_missing_partitions_and_corresponding_file_references(
+        whole_files_download_manifest, files_and_partitions_download_manifest,
+    )
+
+    whole_files_to_retry += files_with_missing_partitions
+    whole_files_and_partitions_to_retry += missing_partitions
+
+    files_to_concatenate = filter_files_ready_for_concatenation(
+        whole_files_download_manifest, whole_files_to_retry,
+    )
+
+    files_ready_for_integrity_test = concatenate_each_file_partitions(files_to_concatenate)
+
+    failed_downloads = get_list_of_failed_downloads(files_ready_for_integrity_test)
+
+    for file in failed_downloads:
+        whole_files_to_retry.append(file)
+        if file.is_partitioned is False:
+            whole_files_and_partitions_to_retry.append(file)
+        else:
+            whole_files_and_partitions_to_retry += get_partitions_download_details(
+                files_and_partitions_download_manifest, file.file_name,
+            )
+    return whole_files_to_retry, whole_files_and_partitions_to_retry
