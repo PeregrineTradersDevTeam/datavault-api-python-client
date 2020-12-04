@@ -54,3 +54,25 @@ def check_size(path_to_file: pathlib.Path) -> int:
 
     """
     return path_to_file.stat().st_size
+
+
+def data_integrity_test(file_download_details: DownloadDetails) -> bool:
+    """Checks if the checksum digest and size of the downloaded file match the expected values.
+
+    Parameters
+    ----------
+    file_download_details: DownloadDetails
+        A DownloadDetails named tuple containing, among others, the expected
+        characteristics of a specific file (size and md5sum digest).
+
+    Returns
+    -------
+    bool
+        True if the downloaded file passes the test, False otherwise.
+    """
+    if (
+        check_size(file_download_details.file_path) == file_download_details.size
+        and calculate_checksum(file_download_details.file_path) == file_download_details.md5sum
+    ):
+        return True
+    return False
