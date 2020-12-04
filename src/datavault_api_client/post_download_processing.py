@@ -11,7 +11,7 @@ from datavault_api_client.pre_download_processing import filter_files_to_split
 
 def get_partitions_download_details(
     files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
-    file_name: str = None
+    file_name: str = None,
 ) -> List[PartitionDownloadDetails]:
     """Filters from the download manifest the PartitionDownloadDetails named-tuples.
 
@@ -88,3 +88,47 @@ def get_list_of_downloaded_partitions(path_to_folder: pathlib.Path) -> List[Any]
         list_of_partition_files_in_folder.sort(key=get_partition_index)
     return list_of_partition_files_in_folder
 
+
+def get_list_of_missing_partitions(
+    file_specific_download_details: DownloadDetails,
+    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
+) -> List[Any]:
+    """Compares the downloaded against the expected partitions and returns the missing partitions.
+
+    Parameters
+    ----------
+    file_specific_download_details: DownloadDetails
+        A DownloadDetails named-tuple containing file-specific download information.
+    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
+        A list of DownloadDetails and PartitionDownloadDetails named-tuples.
+
+    Returns
+    -------
+    List[Any]
+        If any missing partition is detected, the function will return a list of
+        PartitionDownloadDetails named-tuples, one for each missing partition. If,
+        instead, no missing partition is found, the function will return an empty
+        list.
+    """
+    expected_partitions = get_partitions_download_details(
+        files_and_partitions_download_manifest,
+        file_name=file_specific_download_details.file_name,
+    )
+
+    expected_partitions_paths = {
+        partition.file_path for partition in expected_partitions
+    }
+    downloaded_partitions_paths = set(
+        get_list_of_downloaded_partitions(
+            file_specific_download_details.file_path.parent,
+        )
+    )
+
+    missing_partitions_paths = expected_partitions_paths.difference(
+        downloaded_partitions_paths
+    )
+
+    return [
+        partition for partition in expected_partitions
+        if partition.file_path in missing_partitions_paths
+    ]
