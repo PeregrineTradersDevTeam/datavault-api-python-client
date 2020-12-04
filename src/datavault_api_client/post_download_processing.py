@@ -170,3 +170,37 @@ def get_all_missing_partitions_and_corresponding_file_references(
             files_with_missing_partitions.append(partitioned_file)
             all_missing_partitions += missing_partitions
     return files_with_missing_partitions, all_missing_partitions
+
+
+def filter_files_ready_for_concatenation(
+    whole_files_download_manifest: List[DownloadDetails],
+    files_with_missing_partitions: List[DownloadDetails],
+) -> List[DownloadDetails]:
+    """Filters those files that are not missing any partition and thus are ready for concatenation.
+
+    Parameters
+    ----------
+    whole_files_download_manifest: List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing file-specific download
+        information.
+    files_with_missing_partitions: List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing file-specific download
+        information for all those files that are missing some partitions after the
+        download.
+
+    Returns
+    -------
+    List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing file-specific download
+        information for all those files that are not missing any partition after the
+        download and that therefore are ready to have their partitions concatenated in
+        a single file.
+    """
+    partitioned_files = set(filter_files_to_split(whole_files_download_manifest))
+    files_missing_partitions = set(files_with_missing_partitions)
+    files_ready_for_concatenation = list(
+        partitioned_files.difference(files_missing_partitions),
+    )
+    if len(files_ready_for_concatenation) != 0:
+        files_ready_for_concatenation.sort(key=lambda x: x.file_name)
+    return files_ready_for_concatenation
