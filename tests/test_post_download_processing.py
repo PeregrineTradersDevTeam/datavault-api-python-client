@@ -43,6 +43,45 @@ class TestGetPartitionsDownloadDetails:
         # Verify
         expected_names_of_specific_partitions = [
             item for item in files_and_partitions
-            if type(item) is PartitionDownloadDetails and item.parent_file_name == file_name]
+            if type(item) is PartitionDownloadDetails and item.parent_file_name == file_name
+        ]
         assert computed_list_of_name_specific_partitions == expected_names_of_specific_partitions
+        # Cleanup - none
+
+
+class TestGetPartitionIndex:
+    @pytest.mark.parametrize(
+        'path_to_partition_file, correct_partition_index', [
+            (
+                pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '22', 'S905', 'WATCHLIST', 'WATCHLIST_905_20200722_5.txt',
+                ),
+                5,
+            ),
+            (
+                pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '22', 'S905', 'WATCHLIST',
+                    'WATCHLIST_905_20200722_20.txt',
+                ),
+                20,
+            ),
+            (
+                pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '22', 'S905', 'WATCHLIST',
+                    'WATCHLIST_905_20200722_27.txt',
+                ),
+                27,
+            ),
+        ]
+    )
+    def test_identification_of_partition_index(
+        self,
+        path_to_partition_file,
+        correct_partition_index
+    ):
+        # Setup - none
+        # Exercise
+        partition_index = pdp.get_partition_index(path_to_partition_file)
+        # Verify
+        assert partition_index == correct_partition_index
         # Cleanup - none
