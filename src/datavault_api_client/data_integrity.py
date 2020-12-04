@@ -37,3 +37,20 @@ def calculate_checksum(path_to_file: pathlib.Path, hash_constructor=hashlib.md5)
         for chunk in iter(lambda: file.read(optimal_chunk_size), b""):
             file_hash.update(chunk)
     return file_hash.hexdigest()
+
+
+def check_size(path_to_file: pathlib.Path) -> int:
+    """Calculates the size of a file in bytes.
+
+    Parameters
+    ----------
+    path_to_file: pathlib.Path
+        The path to the file for which we want to calculate the size.
+
+    Returns
+    -------
+    int
+        The size of the file in bytes.
+
+    """
+    return path_to_file.stat().st_size
