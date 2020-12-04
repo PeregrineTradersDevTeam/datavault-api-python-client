@@ -2,7 +2,7 @@
 
 import shutil
 import pathlib
-from typing import List, Union
+from typing import Any, List, Union
 
 from datavault_api_client.data_integrity import get_list_of_failed_downloads
 from datavault_api_client.data_structures import DownloadDetails, PartitionDownloadDetails
@@ -64,3 +64,27 @@ def get_partition_index(path_to_partition: pathlib.Path) -> int:
     index of a partition.
     """
     return int(path_to_partition.stem.split("_")[3])
+
+
+def get_list_of_downloaded_partitions(path_to_folder: pathlib.Path) -> List[Any]:
+    """Retrieves the full paths of the partitions file in a folder.
+
+    Parameters
+    ----------
+    path_to_folder: pathlib.Path
+        A pathlib.Path indicating the full path to the directory where we want to check
+        for partition files.
+
+    Returns
+    -------
+    List[Any]
+        If in the directory that is passed as an input are found partition files, the
+        function will return a list of pathlib.Path objects each containing the full
+        path to an individual partition file. If no partition file is found in the
+        directory, the function will return an empty list.
+    """
+    list_of_partition_files_in_folder = list(path_to_folder.glob("*.txt"))
+    if len(list_of_partition_files_in_folder) != 0:
+        list_of_partition_files_in_folder.sort(key=get_partition_index)
+    return list_of_partition_files_in_folder
+
