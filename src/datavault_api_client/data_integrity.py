@@ -76,3 +76,25 @@ def data_integrity_test(file_download_details: DownloadDetails) -> bool:
     ):
         return True
     return False
+
+
+def get_list_of_failed_downloads(
+    downloaded_files_info: List[DownloadDetails]
+) -> List[DownloadDetails]:
+    """Tests the integrity of a list of files and collects those files that failed the test.
+
+    Parameters
+    ----------
+    downloaded_files_info: List[DownloadDetails]
+        A list of DownloadDetails named-tuples containing, for each file, the file name,
+        the download URL, the file path, the file size, the md5sum and the is_partitioned
+        flag.
+
+    Returns
+    -------
+    List[DownloadDetails]
+        A list of DownloadDetails named-tuples of all those files that failed the
+        integrity test.
+
+    """
+    return [file for file in downloaded_files_info if data_integrity_test(file) is False]
