@@ -41,3 +41,26 @@ def get_partitions_download_details(
         file for file in files_and_partitions_download_manifest
         if type(file) is PartitionDownloadDetails and file.parent_file_name == file_name
     ]
+
+
+def get_partition_index(path_to_partition: pathlib.Path) -> int:
+    """Retrieves the partition index from a partition file name.
+
+    Parameters
+    ----------
+    path_to_partition: pathlib.Path
+        A pathlib.Path object containing the full path to the partition file.
+
+    Returns
+    -------
+    int
+        The partition index as an integer.
+
+    Notes
+    -----
+    Each partition file is named according to the format:
+    <FILE-TYPE>_<SOURCE-ID>_<DATE>_<PARTITION_INDEX>.txt
+    This standardised structure is used by the function to consistently retrieve the
+    index of a partition.
+    """
+    return int(path_to_partition.stem.split("_")[3])
