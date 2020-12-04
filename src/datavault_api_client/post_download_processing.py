@@ -2,7 +2,7 @@
 
 import shutil
 import pathlib
-from typing import Any, List, Union
+from typing import Any, List, Union, Tuple
 
 from datavault_api_client.data_integrity import get_list_of_failed_downloads
 from datavault_api_client.data_structures import DownloadDetails, PartitionDownloadDetails
@@ -132,3 +132,41 @@ def get_list_of_missing_partitions(
         partition for partition in expected_partitions
         if partition.file_path in missing_partitions_paths
     ]
+
+
+def get_all_missing_partitions_and_corresponding_file_references(
+    whole_files_download_manifest: List[DownloadDetails],
+    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
+) -> Tuple[List[Any], List[Any]]:
+    """Checks for missing partitions and return a list of them and their corresponding files.
+
+    Parameters
+    ----------
+    whole_files_download_manifest: List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing file-specific download
+        information.
+    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
+        A list of DownloadDetails and PartitionDownloadDetails named-tuples.
+
+    Returns
+    -------
+    Tuple[List[Any], List[Any]]
+    If the function detects any missing partition, it will return a tuple containing a
+    list of DownloadDetails named-tuple with the download information of all those files
+    that are missing some partitions, and a list of PartitionDownloadDetails containing
+    the download information of the missing partitions. If no missing partition is found,
+    the function will return a tuple of empty lists.
+    """
+    list_of_all_partitions_download_details = get_partitions_download_details(
+        files_and_partitions_download_manifest,
+    )
+    all_missing_partitions = []
+    files_with_missing_partitions = []
+    for partitioned_file in filter_files_to_split(whole_files_download_manifest):
+        missing_partitions = get_list_of_missing_partitions(
+            partitioned_file, list_of_all_partitions_download_details,
+        )
+        if len(missing_partitions) > 0:
+            files_with_missing_partitions.append(partitioned_file)
+            all_missing_partitions += missing_partitions
+    return files_with_missing_partitions, all_missing_partitions
