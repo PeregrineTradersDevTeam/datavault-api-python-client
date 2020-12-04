@@ -204,3 +204,43 @@ def filter_files_ready_for_concatenation(
     if len(files_ready_for_concatenation) != 0:
         files_ready_for_concatenation.sort(key=lambda x: x.file_name)
     return files_ready_for_concatenation
+
+
+def concatenate_partitions(path_to_output_file: pathlib.Path) -> str:
+    """Concatenates partition files.
+
+    Parameters
+    ----------
+    path_to_output_file: pathlib.Path
+        A pathlib.Path object indicating where the file that is assembled out of the
+        single partition files will be saved.
+
+    Returns
+    -------
+    str
+        The full path of the output file as a string.
+    """
+    available_partition_files = get_list_of_downloaded_partitions(
+        path_to_output_file.parent
+    )
+    with path_to_output_file.open("wb") as outfile:
+        for file_path in available_partition_files:
+            with file_path.open("rb") as file_source:
+                shutil.copyfileobj(file_source, outfile, length=(5 * 1024 * 1024))
+            file_path.unlink()
+    # for partition_file in available_partition_files:
+    #     partition_file.unlink()
+    return path_to_output_file.as_posix()
+
+
+def concatenate_each_file_partitions(files_to_concatenate: List[DownloadDetails]) -> None:
+    """Concatenates the partition files of all the files with partitions to concatenate.
+
+    Parameters
+    ----------
+    files_to_concatenate: List[DownloadDetails]
+        A list of DownloadDetails named-tuples containing the download information of all
+        those files that do not have any missing partition.
+    """
+    for file in files_to_concatenate:
+        concatenate_partitions(file.file_path)
