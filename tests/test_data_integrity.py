@@ -28,7 +28,29 @@ class TestChecksum:
     def test_correct_digest_calculation(self, file_path, hash_constructor, true_digest):
         # Setup - none
         # Exercise
-        calculated_digest = data_integrity.checksum(file_path, hash_constructor)
+        calculated_digest = data_integrity.calculate_checksum(file_path, hash_constructor)
         # Verify
         assert calculated_digest == true_digest
+        # Cleanup - none
+
+
+class TestCheckSize:
+    @pytest.mark.parametrize(
+        'file_path, true_file_size', [
+            (
+                pathlib.Path(__file__).resolve().parent / 'static_data' / 'test_file_1.txt',
+                2000000,
+            ),
+            (
+                pathlib.Path(__file__).resolve().parent / 'static_data' / 'test_file_2.txt.bz2',
+                10567426,
+             )
+        ]
+    )
+    def test_right_size_calculation(self, file_path, true_file_size):
+        # Setup - none
+        # Exercise
+        calculated_size = data_integrity.check_size(file_path)
+        # Verify
+        assert calculated_size == true_file_size
         # Cleanup - none
