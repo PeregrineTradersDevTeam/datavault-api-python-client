@@ -70,16 +70,17 @@ def data_integrity_test(file_download_details: DownloadDetails) -> bool:
     bool
         True if the downloaded file passes the test, False otherwise.
     """
-    if (
-        check_size(file_download_details.file_path) == file_download_details.size
-        and calculate_checksum(file_download_details.file_path) == file_download_details.md5sum
-    ):
+    test_results = (
+        check_size(file_download_details.file_path) == file_download_details.size,
+        calculate_checksum(file_download_details.file_path) == file_download_details.md5sum,
+    )
+    if all(test_results) is True:
         return True
     return False
 
 
 def get_list_of_failed_downloads(
-    downloaded_files_info: List[DownloadDetails]
+    downloaded_files_info: List[DownloadDetails],
 ) -> List[DownloadDetails]:
     """Tests the integrity of a list of files and collects those files that failed the test.
 
