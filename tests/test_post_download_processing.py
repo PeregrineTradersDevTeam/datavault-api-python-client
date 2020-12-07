@@ -397,13 +397,34 @@ class TestFilterFilesReadyForConcatenation:
             )
         )
         # Verify
-        expected_files_to_concatenate = {'CROSSREF_207_20200721.txt.bz2',
-                                             'WATCHLIST_367_20200721.txt.bz2'}
+        expected_files_to_concatenate = [
+            'CROSSREF_207_20200721.txt.bz2',
+            'WATCHLIST_367_20200721.txt.bz2',
+        ]
         expected_files_ready_for_concatenation = [
             item for item in whole_files_download_details
             if item.file_name in expected_files_to_concatenate
         ]
         assert computed_files_ready_for_concatenation == expected_files_ready_for_concatenation
+        # Cleanup - none
+
+    def test_no_file_ready_for_concatenation_scenario(
+        self,
+        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_details = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = mocked_download_details_multiple_sources_single_day
+        # Exercise
+        files_ready_for_concatenation = (
+            pdp.filter_files_ready_for_concatenation(
+                whole_files_download_details,
+                files_with_missing_partitions,
+            )
+        )
+        # Verify
+        assert files_ready_for_concatenation == []
         # Cleanup - none
 
 
