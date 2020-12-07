@@ -581,3 +581,185 @@ class TestConcatenateAllFiles:
         directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
+
+
+class TestFilterFilesReadyForIntegrityTest:
+    def test_no_file_with_missing_partitions_scenario(
+        self,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_manifest = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = []
+        # Exercise
+        files_ready_for_integrity_test = pdp.filter_files_ready_for_integrity_test(
+            files_with_missing_partitions,
+            whole_files_download_manifest,
+        )
+        # Verify
+        assert (
+            files_ready_for_integrity_test.sort(key=lambda x: x.file_name) ==
+            whole_files_download_manifest.sort(key=lambda x: x.file_name)
+        )
+        # Cleanup - none
+
+    def test_files_with_missing_partitions_scenario(
+        self,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_manifest = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = [
+            DownloadDetails(
+                file_name="WATCHLIST_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/"
+                    "WATCHLIST/20200721-S207_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721.txt.bz2"
+                ),
+                size=72293374,
+                md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/"
+                    "WATCHLIST/20200721-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721.txt.bz2"
+                ),
+                size=82451354,
+                md5sum="62df718ef5eb5f9f1ea3f6ea1f826c30",
+                is_partitioned=True,
+            ),
+        ]
+        files_ready_for_integrity_test = pdp.filter_files_ready_for_integrity_test(
+            files_with_missing_partitions,
+            whole_files_download_manifest,
+        )
+        # Verify
+        expected_files_ready_for_integrity_test = [
+            DownloadDetails(
+                file_name="COREREF_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/"
+                    "S207/CORE/20200721-S207_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S207/CORE", "COREREF_207_20200721.txt.bz2"
+                ),
+                size=4590454,
+                md5sum="c1a079841f84676e91b5021afd3f5272",
+                is_partitioned=False,
+            ),
+            DownloadDetails(
+                file_name="COREREF_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/"
+                    "S367/CORE/20200721-S367_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S367/CORE", "COREREF_367_20200721.txt.bz2"
+                ),
+                size=706586,
+                md5sum="e28385e918aa71720235232c9a895b64",
+                is_partitioned=False,
+            ),
+            DownloadDetails(
+                file_name="CROSSREF_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/CROSS/"
+                    "20200721-S207_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S207/CROSS", "CROSSREF_207_20200721.txt.bz2"
+                ),
+                size=14690557,
+                md5sum="f2683cd87a7b29f3b8776373d56a8456",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="CROSSREF_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/CROSS/"
+                    "20200721-S367_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S367/CROSS", "CROSSREF_367_20200721.txt.bz2"
+                ),
+                size=879897,
+                md5sum="fdb7592c8806a28f59c4d4da1e934c43",
+                is_partitioned=False,
+            ),
+        ]
+        assert (
+            files_ready_for_integrity_test.sort(key=lambda x: x.file_name) ==
+            whole_files_download_manifest.sort(key=lambda x: x.file_name)
+        )
+        # Cleanup - none
+
+
+# class TestProcessDownloadedFiles:
+#     def test_all_partitions_successfully_downloaded_scenario(
+#         self,
+#         mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+#         mocked_download_details_multiple_sources_single_day,
+#     ):
+#         # Setup
+#         whole_files_download_manifest = mocked_download_details_multiple_sources_single_day
+#         files_and_partitions_download_manifest = (
+#             mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day
+#         )
+#         base_path = pathlib.Path(__file__).resolve().parent.joinpath(
+#             'Data', '2020', '07', '21', 'S207',
+#         )
+#         base_path.mkdir(parents=True, exist_ok=True)
+#         expected_partitions = {
+#             "CROSSREF_207_20200721.txt.bz2": [
+#                 "CROSSREF_207_20200721_1.txt",
+#                 "CROSSREF_207_20200721_2.txt",
+#                 "CROSSREF_207_20200721_3.txt,"
+#             ],
+#             "WATCHLIST_207_20200721.txt.bz2": [
+#                 "WATCHLIST_207_20200721_1.txt",
+#                 "WATCHLIST_207_20200721_2.txt",
+#                 "WATCHLIST_207_20200721_3.txt",
+#                 "WATCHLIST_207_20200721_4.txt",
+#                 "WATCHLIST_207_20200721_5.txt",
+#                 "WATCHLIST_207_20200721_6.txt",
+#                 "WATCHLIST_207_20200721_7.txt",
+#                 "WATCHLIST_207_20200721_8.txt",
+#                 "WATCHLIST_207_20200721_9.txt",
+#                 "WATCHLIST_207_20200721_10.txt",
+#                 "WATCHLIST_207_20200721_11.txt",
+#                 "WATCHLIST_207_20200721_12.txt",
+#                 "WATCHLIST_207_20200721_13.txt",
+#                 "WATCHLIST_207_20200721_14.txt",
+#             ],
+#             "WATCHLIST_367_20200721.txt.bz2": [
+#                 "WATCHLIST_367_20200721_1.txt",
+#                 "WATCHLIST_367_20200721_2.txt",
+#                 "WATCHLIST_367_20200721_3.txt",
+#                 "WATCHLIST_367_20200721_4.txt",
+#                 "WATCHLIST_367_20200721_5.txt",
+#                 "WATCHLIST_367_20200721_6.txt",
+#                 "WATCHLIST_367_20200721_7.txt",
+#                 "WATCHLIST_367_20200721_8.txt",
+#                 "WATCHLIST_367_20200721_9.txt",
+#                 "WATCHLIST_367_20200721_10.txt",
+#                 "WATCHLIST_367_20200721_11.txt",
+#                 "WATCHLIST_367_20200721_12.txt",
+#                 "WATCHLIST_367_20200721_13.txt",
+#                 "WATCHLIST_367_20200721_14.txt",
+#                 "WATCHLIST_367_20200721_15.txt",
+#                 "WATCHLIST_367_20200721_16.txt",
+#             ],
+#         }
+#
+#         # Exercise
+#         # Verify
+#         # Cleanup - none
