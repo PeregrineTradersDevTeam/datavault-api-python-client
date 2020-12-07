@@ -249,6 +249,37 @@ def concatenate_each_file_partitions(
     return files_to_concatenate
 
 
+def filter_files_ready_for_integrity_test(
+    files_with_missing_partitions: List[DownloadDetails],
+    whole_files_download_manifest: List[DownloadDetails],
+) -> List[DownloadDetails]:
+    """Returns a list of those files that are ready for the data integrity checks.
+
+    The list of files ready for the data integrity checks is made of a combination of
+    those files that were not split in multiple partitions, and those files that were
+    split in multiple partitions but were not missing any partition after the download
+    took place.
+
+    Parameters
+    ----------
+    files_with_missing_partitions: List[DownloadDetails]
+        A list of DownloadDetails named-tuples containing the information of those
+        files that had missing partitions after the download was completed.
+    whole_files_download_manifest: List[DownloadDetails]
+        A list of DownloadDetails named-tuples containing the information of all the
+        files to download.
+
+    Returns
+    -------
+    List[DownloadDetails]
+        A list of DownloadDetails named-tuples containing the information of those files
+        that are ready for the data integrity checks.
+    """
+    all_files = set(whole_files_download_manifest)
+    files_with_missing_partitions = set(files_with_missing_partitions)
+    return list(all_files.difference(files_with_missing_partitions))
+
+
 def process_downloaded_files(
     whole_files_download_manifest: List[DownloadDetails],
     files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
@@ -290,16 +321,16 @@ def process_downloaded_files(
         whole_files_download_manifest, whole_files_to_retry,
     )
 
-    files_ready_for_integrity_test = concatenate_each_file_partitions(files_to_concatenate)
+    if len(files_to_concatenate) != 0:
+        files_ready_for_integrity_test = concatenate_each_file_partitions(files_to_concatenate)
+        failed_downloads = get_list_of_failed_downloads(files_ready_for_integrity_test)
+        for file in failed_downloads:
+            whole_files_to_retry.append(file)
+            if file.is_partitioned is False:
+                whole_files_and_partitions_to_retry.append(file)
+            else:
+                whole_files_and_partitions_to_retry += get_partitions_download_details(
+                    files_and_partitions_download_manifest, file.file_name,
+                )
 
-    failed_downloads = get_list_of_failed_downloads(files_ready_for_integrity_test)
-
-    for file in failed_downloads:
-        whole_files_to_retry.append(file)
-        if file.is_partitioned is False:
-            whole_files_and_partitions_to_retry.append(file)
-        else:
-            whole_files_and_partitions_to_retry += get_partitions_download_details(
-                files_and_partitions_download_manifest, file.file_name,
-            )
     return whole_files_to_retry, whole_files_and_partitions_to_retry
