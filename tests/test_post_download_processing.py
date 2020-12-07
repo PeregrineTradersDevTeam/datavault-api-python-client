@@ -405,3 +405,46 @@ class TestFilterFilesReadyForConcatenation:
         ]
         assert computed_files_ready_for_concatenation == expected_files_ready_for_concatenation
         # Cleanup - none
+
+
+class TestConcatenatePartitions:
+    def test_concatenation_of_files(self):
+        # Setup
+        base_path = pathlib.Path(__file__).resolve().parent.joinpath(
+            'Data', '2020', '07', '21', 'CROSS',
+        )
+        base_path.mkdir(parents=True, exist_ok=True)
+        file_names = [
+            'CROSSREF_207_20200721_1.txt',
+            'CROSSREF_207_20200721_2.txt',
+            'CROSSREF_207_20200721_3.txt',
+        ]
+
+        concatenated_content = b''
+
+        for file_name in file_names:
+            fpath = base_path / file_name
+            with fpath.open('wb') as outfile:
+                random_byte_content = os.urandom(500)
+                concatenated_content += random_byte_content
+                outfile.write(random_byte_content)
+
+        path_to_output_file = base_path / 'CROSSREF_207_20200721.txt.bz2'
+        # Execute
+        concatenated_file = pdp.concatenate_partitions(
+            path_to_output_file)
+        # Verify
+        assert concatenated_file == path_to_output_file.as_posix()
+
+        with path_to_output_file.open('rb') as infile:
+            file_content = infile.read()
+
+        assert file_content == concatenated_content
+        # Cleanup
+        # First, remove all the created files
+        for file in list(base_path.glob('**/*.bz2')):
+            file.unlink()
+        # Then remove all the created folders iteratively:
+        directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
