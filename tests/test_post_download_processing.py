@@ -364,3 +364,44 @@ class TestGetAllMissingPartitionsAndCorrespondingFileReferences:
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
 
+
+class TestFilterFilesReadyForConcatenation:
+    def test_identification_of_files_ready_for_concatenation(
+        self,
+        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_details = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = [
+            DownloadDetails(
+                file_name="WATCHLIST_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/"
+                    "WATCHLIST/20200721-S207_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "07", "21", "S207", "WATCHLIST",
+                    "WATCHLIST_207_20200721.txt.bz2",
+                ),
+                size=72293374,
+                md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
+                is_partitioned=True,
+            )
+        ]
+        # Exercise
+        computed_files_ready_for_concatenation = (
+            pdp.filter_files_ready_for_concatenation(
+                whole_files_download_details,
+                files_with_missing_partitions,
+            )
+        )
+        # Verify
+        expected_files_to_concatenate = {'CROSSREF_207_20200721.txt.bz2',
+                                             'WATCHLIST_367_20200721.txt.bz2'}
+        expected_files_ready_for_concatenation = [
+            item for item in whole_files_download_details
+            if item.file_name in expected_files_to_concatenate
+        ]
+        assert computed_files_ready_for_concatenation == expected_files_ready_for_concatenation
+        # Cleanup - none
