@@ -154,6 +154,8 @@ def process_raw_download_info(
             file_name=raw_download_info.file_name,
             datavault_download_url=raw_download_info.download_url,
         ),
+        source_id=raw_download_info.source_id,
+        reference_date=raw_download_info.reference_date,
         size=raw_download_info.size,
         md5sum=raw_download_info.md5sum,
         is_partitioned=check_if_partitioned(raw_download_info.size, partition_size_in_mib),
