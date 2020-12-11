@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 import requests
 
@@ -38,6 +40,18 @@ class TestParseSourceFromName:
         # Cleanup - none
 
 
+class TestParseReferenceDate:
+    def test_reference_date_parser(self):
+        # Setup
+        filename_to_parse = "WATCHLIST_945_20201201.txt.bz2"
+        # Exercise
+        parsed_reference_date = crawler.parse_reference_date(filename_to_parse)
+        # Verify
+        expected_reference_date = datetime.datetime(year=2020, month=12, day=1)
+        assert parsed_reference_date == expected_reference_date
+        # Cleanup - none
+
+
 class TestCreateDiscoveredFileObject:
     def test_discovered_file_object_creation(self):
         # Setup
@@ -62,7 +76,8 @@ class TestCreateDiscoveredFileObject:
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/11/30/S945/WATCHLIST/"
                 "20201130-S945_WATCHLIST_accountname_0_0"
             ),
-            source="945",
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=11, day=30),
             size=78994869,
             md5sum="bf703f867cad0b414d84fac0c9bfe0e5",
         )
@@ -90,7 +105,8 @@ class TestInitializeSearch:
                     "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/"
                     "WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
                 ),
-                source="367",
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=16),
                 size=100145874,
                 md5sum="fb34325ec9262adc74c945a9e7c9b465",
             )
@@ -107,7 +123,7 @@ class TestInitializeSearch:
         session = requests.Session()
         url = "https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/WATCHLIST"
         credentials = ("username", "password")
-        source_id = "945"
+        source_id = 945
         # Exercise
         stack, leaf_nodes = crawler.initialise_search(url, credentials, session, source_id)
         # Verify
@@ -123,7 +139,7 @@ class TestInitializeSearch:
         session = requests.Session()
         url = "https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/WATCHLIST"
         credentials = ("username", "password")
-        source_id = "367"
+        source_id = 367
         # Exercise
         stack, leaf_nodes = crawler.initialise_search(url, credentials, session, source_id)
         # Verify
@@ -135,14 +151,15 @@ class TestInitializeSearch:
                     "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/"
                     "WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
                 ),
-                source="367",
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=16),
                 size=100145874,
                 md5sum="fb34325ec9262adc74c945a9e7c9b465",
             )
         ]
         # Cleanup - none
 
-    def test_inizialization_of_search_from_top_level(
+    def test_initialisation_of_search_from_top_level(
         self,
         mocked_top_level_datavault_api,
     ):
@@ -229,7 +246,7 @@ class TestTraverseApiDirectoryTree:
         url = "https://api.icedatavault.icedataservices.com/v2/list"
         credentials = ("username", "password")
         leaf_nodes = []
-        source_id = "673"
+        source_id = 673
         # Exercise
         discovered_files = crawler.traverse_api_directory_tree(
             session,
@@ -252,7 +269,7 @@ class TestTraverseApiDirectoryTree:
         url = "https://api.icedatavault.icedataservices.com/v2/list"
         credentials = ("username", "password")
         leaf_nodes = []
-        source_id = "367"
+        source_id = 367
         # Exercise
         discovered_files = crawler.traverse_api_directory_tree(
             session,
@@ -265,7 +282,7 @@ class TestTraverseApiDirectoryTree:
         # Verify
         expected_files = [
             file for file in mocked_set_of_files_available_to_download_multiple_sources_single_day
-            if file.source == source_id
+            if file.source_id == int(source_id)
         ]
         expected_files.sort(key=lambda x: x.file_name)
         assert discovered_files == expected_files
@@ -352,7 +369,8 @@ class TestTraverseApiDirectoryTree:
                     "https://api.icedatavault.icedataservices.com/v2/data/2020/12/01/S945/CORE/"
                     "20201201-S945_CORE_ALL_0_0"
                 ),
-                source="945",
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=1),
                 size=15680,
                 md5sum='c9cc20020def775933be0be9690a9b5a',
             )
@@ -436,12 +454,12 @@ class TestDatavaultCrawl:
         url_to_crawl = "https://api.icedatavault.icedataservices.com/v2/list"
         credentials = ("username", "password")
         # Exercise
-        discovered_files = crawler.datavault_crawler(url_to_crawl, credentials, source_id="207")
+        discovered_files = crawler.datavault_crawler(url_to_crawl, credentials, source_id=207)
         discovered_files.sort(key=lambda x: x.file_name)
         # Verify
         expected_files = [
             file for file in mocked_set_of_files_available_to_download_multiple_sources_single_day
-            if file.source == "207"
+            if file.source_id == 207
         ]
         expected_files.sort(key=lambda x: x.file_name)
         assert discovered_files == expected_files
