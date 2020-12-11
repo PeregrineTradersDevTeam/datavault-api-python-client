@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,362 @@ def mocked_response():
         yield resp
 
 
+@pytest.fixture
+def mocked_top_level_datavault_api(mocked_response):
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list",
+        json=[
+            {
+                'name': '2020',
+                'parent': '/v2/list',
+                'url': '/v2/list/2020',
+                'size': 0,
+                'createdAt': '2020-01-01T00:00:00',
+                'updatedAt': '2020-12-01T00:00:00',
+                'writable': False,
+                'directory': True
+            }
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Tue, 01 Dec 2020 16:49:36 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+
+
+@pytest.fixture
+def mocked_top_level_datavault_api_failed_request(mocked_response):
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list",
+        json=[
+            {
+                'error': 'ClientError',
+            }
+        ],
+        status=400,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Tue, 01 Dec 2020 16:49:36 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+
+
+@pytest.fixture
+def mocked_datavault_api_with_down_the_line_failed_request(mocked_response):
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020",
+        json=[
+            {
+                'name': '12',
+                'parent': '/v2/list/2020',
+                'url': '/v2/list/2020/12',
+                'size': 0,
+                'createdAt': '2020-12-01T00:00:00',
+                'updatedAt': '2020-12-02T00:00:00',
+                'writable': False,
+                'directory': True
+            },
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 13:21:52 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff', 'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0', 'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020/12",
+        json=[
+            {
+                'error': 'unauthorized',
+                'error_description': 'Full authentication is required to access this resource',
+            }
+        ],
+        status=401,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 13:24:50 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+            'WWW-Authenticate': (
+                'Bearer realm="resource", error="unauthorized", '
+                'error_description="Full authentication is required to access this resource"'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+
+
+@pytest.fixture
+def mocked_datavault_api_with_repeated_node(mocked_response):
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020",
+        json=[
+            {
+                'name': '12',
+                'parent': '/v2/list/2020',
+                'url': '/v2/list/2020/12',
+                'size': 0,
+                'createdAt': '2020-12-01T00:00:00',
+                'updatedAt': '2020-12-02T00:00:00',
+                'writable': False,
+                'directory': True
+            },
+            {
+                'name': '12',
+                'parent': '/v2/list/2020',
+                'url': '/v2/list/2020/12',
+                'size': 0,
+                'createdAt': '2020-12-01T00:00:00',
+                'updatedAt': '2020-12-02T00:00:00',
+                'writable': False,
+                'directory': True
+            },
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 13:21:52 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff', 'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0', 'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020/12",
+        json=[
+            {
+                'name': '01',
+                'parent': '/v2/list/2020/12',
+                'url': '/v2/list/2020/12/01',
+                'size': 0,
+                'createdAt': '2020-12-01T23:21:18',
+                'updatedAt': '2020-12-02T09:14:31',
+                'writable': False,
+                'directory': True
+            },
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 14:08:39 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020/12/01",
+        json=[
+            {
+                'name': 'S945',
+                'parent': '/v2/list/2020/12/01',
+                'url': '/v2/list/2020/12/01/S945',
+                'size': 0,
+                'createdAt': '2020-12-01T23:10:48',
+                'updatedAt': '2020-12-01T23:21:18',
+                'writable': False,
+                'directory': True
+             },
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 14:16:28 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020/12/01/S945",
+        json=[
+            {
+                'name': 'CORE',
+                'parent': '/v2/list/2020/12/01/S945',
+                'url': '/v2/list/2020/12/01/S945/CORE',
+                'size': 0,
+                'createdAt': '2020-12-01T23:10:48',
+                'updatedAt': '2020-12-01T23:10:48',
+                'writable': False,
+                'directory': True
+            },
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 14:18:35 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+    mocked_response.add(
+        responses.GET,
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020/12/01/S945/CORE",
+        json=[
+            {
+                'name': 'COREREF_945_20201201.txt.bz2',
+                'fid': '20201201-S945_CORE_ALL_0_0',
+                'parent': '/v2/list/2020/12/01/S945/CORE',
+                'url': '/v2/data/2020/12/01/S945/CORE/20201201-S945_CORE_ALL_0_0',
+                'size': 15680,
+                'md5sum': 'c9cc20020def775933be0be9690a9b5a',
+                'createdAt': '2020-12-01T23:10:48',
+                'updatedAt': '2020-12-01T23:10:48',
+                'writable': False,
+                'directory': False,
+            },
+        ],
+        status=200,
+        content_type="application/json;charset=UTF-8",
+        headers={
+            'Date': 'Wed, 02 Dec 2020 14:19:38 GMT',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
+            'Access-Control-Max-Age': '3600',
+            'Access-Control-Allow-Headers': 'x-request-with, authorization, content-type',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Expose-Headers': (
+                'Cache-Control, Content-Language, Content-Length, Content-Type, '
+                'Expires, Last-Modified, Pragma'
+            ),
+            'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Strict-Transport-Security': 'max-age=31536000 ; includeSubDomains',
+            'X-Frame-Options': 'DENY',
+        },
+    )
+
+
 """Datavault API simulated at the instrument level."""
 
 
@@ -24,15 +381,13 @@ def mocked_response():
 def mocked_datavault_api_instrument_level(mocked_response):
     mocked_response.add(
         responses.GET,
-        url=f"https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/"
-        f"WATCHLIST",
+        url="https://api.icedatavault.icedataservices.com/v2/list/2020/07/16/S367/WATCHLIST",
         json=[
             {
                 "name": "WATCHLIST_username_367_20200716.txt.bz2",
                 "fid": "20200716-S367_WATCHLIST_username_0_0",
                 "parent": "/v2/list/2020/07/16/S367/WATCHLIST",
-                "url": f"/v2/data/2020/07/16/S367/WATCHLIST/20200716-S367_WATCHLIST_"
-                f"username_0_0",
+                "url": "/v2/data/2020/07/16/S367/WATCHLIST/20200716-S367_WATCHLIST_username_0_0",
                 "size": 100145874,
                 "md5sum": "fb34325ec9262adc74c945a9e7c9b465",
                 "createdAt": "2020-07-17T02:18:08",
@@ -69,18 +424,19 @@ def mocked_datavault_api_instrument_level(mocked_response):
 
 @pytest.fixture
 def mocked_set_of_files_available_to_download_single_instrument():
-    files_available_to_download = {
+    files_available_to_download = [
         DiscoveredFileInfo(
             file_name="WATCHLIST_367_20200716.txt.bz2",
             download_url=(
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/"
                 "07/16/S367/WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
             ),
-            source="367",
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=16),
             size=100145874,
             md5sum="fb34325ec9262adc74c945a9e7c9b465",
         ),
-    }
+    ]
     return files_available_to_download
 
 
@@ -95,6 +451,8 @@ def mocked_download_details_single_instrument():
         file_path=Path(__file__).resolve().parent.joinpath(
             "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716.txt.bz2"
         ),
+        source_id=367,
+        reference_date=datetime.datetime(year=2020, month=7, day=16),
         size=100145874,
         md5sum="fb34325ec9262adc74c945a9e7c9b465",
         is_partitioned=True,
@@ -648,14 +1006,15 @@ def mocked_datavault_api_single_source_single_day(mocked_response):
 
 @pytest.fixture
 def mocked_set_of_files_available_to_download_single_source_single_day():
-    set_of_files_available_to_download = {
+    set_of_files_available_to_download = [
         DiscoveredFileInfo(
             file_name="COREREF_945_20200722.txt.bz2",
             download_url=(
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/"
                 "CORE/20200722-S945_CORE_ALL_0_0"
             ),
-            source="945",
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=17734,
             md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
         ),
@@ -665,7 +1024,8 @@ def mocked_set_of_files_available_to_download_single_source_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/"
                 "CROSS/20200722-S945_CROSS_ALL_0_0"
             ),
-            source="945",
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=32822,
             md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
         ),
@@ -675,11 +1035,12 @@ def mocked_set_of_files_available_to_download_single_source_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/"
                 "WATCHLIST/20200722-S945_WATCHLIST_username_0_0"
             ),
-            source="945",
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=61663360,
             md5sum="78571e930fb12fcfb2fb70feb07c7bcf",
         ),
-    }
+    ]
     return set_of_files_available_to_download
 
 
@@ -695,6 +1056,8 @@ def mocked_list_of_whole_files_download_details_single_source_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/CORE", "COREREF_945_20200722.txt.bz2"
             ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=17734,
             md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
             is_partitioned=False,
@@ -708,6 +1071,8 @@ def mocked_list_of_whole_files_download_details_single_source_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/CROSS", "CROSSREF_945_20200722.txt.bz2"
             ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=32822,
             md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
             is_partitioned=False,
@@ -721,6 +1086,8 @@ def mocked_list_of_whole_files_download_details_single_source_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722.txt.bz2"
             ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=61663360,
             md5sum="78571e930fb12fcfb2fb70feb07c7bcf",
             is_partitioned=True,
@@ -741,6 +1108,8 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/CORE", "COREREF_945_20200722.txt.bz2"
             ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=17734,
             md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
             is_partitioned=False,
@@ -754,6 +1123,8 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/CROSS", "CROSSREF_945_20200722.txt.bz2"
             ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
             size=32822,
             md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
             is_partitioned=False,
@@ -1460,14 +1831,15 @@ def mocked_datavault_api_single_source_multiple_days(mocked_response):
 
 @pytest.fixture
 def mocked_set_of_files_available_to_download_single_source_multiple_days():
-    set_of_files_available_to_download = {
+    set_of_files_available_to_download = [
         DiscoveredFileInfo(
             file_name="COREREF_207_20200717.txt.bz2",
             download_url=(
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CORE/"
                 "20200717-S207_CORE_ALL_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=17),
             size=3910430,
             md5sum="63958e5bc651b95da410e76a1763dde7",
         ),
@@ -1477,7 +1849,8 @@ def mocked_set_of_files_available_to_download_single_source_multiple_days():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CROSS/"
                 "20200717-S207_CROSS_ALL_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=17),
             size=13816558,
             md5sum="d1316740714e9b13cf03acf02a23c596",
         ),
@@ -1487,7 +1860,8 @@ def mocked_set_of_files_available_to_download_single_source_multiple_days():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/WATCHLIST/"
                 "20200717-S207_WATCHLIST_username_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=17),
             size=63958346,
             md5sum="9be9099186dfd8a7e0012e58fd49a3da",
         ),
@@ -1497,7 +1871,8 @@ def mocked_set_of_files_available_to_download_single_source_multiple_days():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CORE/"
                 "20200720-S207_CORE_ALL_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=20),
             size=4548016,
             md5sum="a46a5f07b6a402d4023ef550df6a12e4",
         ),
@@ -1507,7 +1882,8 @@ def mocked_set_of_files_available_to_download_single_source_multiple_days():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CROSS/"
                 "20200720-S207_CROSS_ALL_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=20),
             size=14571417,
             md5sum="6b3dbd152e7dccf4147f62b6ce1c78c3",
         ),
@@ -1517,11 +1893,12 @@ def mocked_set_of_files_available_to_download_single_source_multiple_days():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/WATCHLIST/"
                 "20200720-S207_WATCHLIST_username_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=20),
             size=70613654,
             md5sum="ba2c00511520a3cf4b5383ceedb3b41d",
         ),
-    }
+    ]
     return set_of_files_available_to_download
 
 
@@ -2052,14 +2429,15 @@ def mocked_datavault_api_multiple_sources_single_day(mocked_response):
 
 @pytest.fixture
 def mocked_set_of_files_available_to_download_multiple_sources_single_day():
-    set_of_files_available_to_download = {
+    set_of_files_available_to_download = [
         DiscoveredFileInfo(
             file_name="COREREF_207_20200721.txt.bz2",
             download_url=(
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/CORE/"
                 "20200721-S207_CORE_ALL_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=4590454,
             md5sum="c1a079841f84676e91b5021afd3f5272",
         ),
@@ -2069,7 +2447,8 @@ def mocked_set_of_files_available_to_download_multiple_sources_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/CORE/"
                 "20200721-S367_CORE_ALL_0_0"
             ),
-            source="367",
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=706586,
             md5sum="e28385e918aa71720235232c9a895b64",
         ),
@@ -2079,7 +2458,8 @@ def mocked_set_of_files_available_to_download_multiple_sources_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/CROSS/"
                 "20200721-S207_CROSS_ALL_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=14690557,
             md5sum="f2683cd87a7b29f3b8776373d56a8456",
         ),
@@ -2089,7 +2469,8 @@ def mocked_set_of_files_available_to_download_multiple_sources_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/CROSS/"
                 "20200721-S367_CROSS_ALL_0_0"
             ),
-            source="367",
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=879897,
             md5sum="fdb7592c8806a28f59c4d4da1e934c43",
         ),
@@ -2099,7 +2480,8 @@ def mocked_set_of_files_available_to_download_multiple_sources_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/WATCHLIST/"
                 "20200721-S207_WATCHLIST_username_0_0"
             ),
-            source="207",
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=72293374,
             md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
         ),
@@ -2109,11 +2491,12 @@ def mocked_set_of_files_available_to_download_multiple_sources_single_day():
                 "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/WATCHLIST/"
                 "20200721-S367_WATCHLIST_username_0_0"
             ),
-            source="367",
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=82451354,
             md5sum="62df718ef5eb5f9f1ea3f6ea1f826c30",
         ),
-    }
+    ]
     return set_of_files_available_to_download
 
 
@@ -2129,6 +2512,8 @@ def mocked_download_details_multiple_sources_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/CORE", "COREREF_207_20200721.txt.bz2"
             ),
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=4590454,
             md5sum="c1a079841f84676e91b5021afd3f5272",
             is_partitioned=False,
@@ -2142,6 +2527,8 @@ def mocked_download_details_multiple_sources_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/CORE", "COREREF_367_20200721.txt.bz2"
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=706586,
             md5sum="e28385e918aa71720235232c9a895b64",
             is_partitioned=False,
@@ -2155,6 +2542,8 @@ def mocked_download_details_multiple_sources_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/CROSS", "CROSSREF_207_20200721.txt.bz2"
             ),
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=14690557,
             md5sum="f2683cd87a7b29f3b8776373d56a8456",
             is_partitioned=True,
@@ -2168,6 +2557,8 @@ def mocked_download_details_multiple_sources_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/CROSS", "CROSSREF_367_20200721.txt.bz2"
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=879897,
             md5sum="fdb7592c8806a28f59c4d4da1e934c43",
             is_partitioned=False,
@@ -2181,6 +2572,8 @@ def mocked_download_details_multiple_sources_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721.txt.bz2"
             ),
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=72293374,
             md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
             is_partitioned=True,
@@ -2194,6 +2587,8 @@ def mocked_download_details_multiple_sources_single_day():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721.txt.bz2"
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=82451354,
             md5sum="62df718ef5eb5f9f1ea3f6ea1f826c30",
             is_partitioned=True,
@@ -2546,6 +2941,8 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/CORE", "COREREF_207_20200721.txt.bz2"
             ),
+            source_id=207,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=4590454,
             md5sum="c1a079841f84676e91b5021afd3f5272",
             is_partitioned=False,
@@ -2559,6 +2956,8 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/CORE", "COREREF_367_20200721.txt.bz2"
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=706586,
             md5sum="e28385e918aa71720235232c9a895b64",
             is_partitioned=False,
@@ -2572,6 +2971,8 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/CROSS", "CROSSREF_367_20200721.txt.bz2"
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=879897,
             md5sum="fdb7592c8806a28f59c4d4da1e934c43",
             is_partitioned=False,
