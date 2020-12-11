@@ -1,5 +1,5 @@
 """Collects the data structures used across the datavault_api_client library."""
-
+import datetime
 import pathlib
 from typing import NamedTuple
 
@@ -9,7 +9,8 @@ class DiscoveredFileInfo(NamedTuple):
 
     file_name: str
     download_url: str
-    source: str
+    source_id: int
+    reference_date: datetime.datetime
     size: int
     md5sum: str
 
@@ -20,6 +21,8 @@ class DownloadDetails(NamedTuple):
     file_name: str
     download_url: str
     file_path: pathlib.Path
+    source_id: int
+    reference_date: datetime.datetime
     size: int
     md5sum: str
     is_partitioned: bool
