@@ -4,13 +4,16 @@ The functions in this module process the raw information contained in the list o
 DiscoveredFileInfo named tuples that is produced by the crawler, and prepare the download
 manifest that is used by the downloading functions as a reference.
 """
+import datetime
+import json
 import pathlib
-from typing import Dict, Tuple, List, Union
+from typing import Dict, List, Tuple, Union
 import urllib.parse
 
 from datavault_api_client.data_structures import (
     DiscoveredFileInfo,
     DownloadDetails,
+    ItemToDownload,
     PartitionDownloadDetails,
 )
 
@@ -189,6 +192,103 @@ def process_all_discovered_files_info(
         process_raw_download_info(file_info, path_to_data_directory, partition_size_in_mib)
         for file_info in discovered_files_info
     ]
+
+
+def download_detail_to_dict(file_specific_download_details: DownloadDetails) -> ItemToDownload:
+    """Coverts a DownloadDetails named-tuple into an ItemToDownload typed-dictionary.
+
+    Parameters
+    ----------
+    file_specific_download_details: DownloadDetails
+        A DownloadDetails named-tuple containing file-specific download information.
+
+    Returns
+    -------
+    ItemToDownload
+        A typed-dictionary with the information originally contained in the DownloadDetails
+        named-tuple.
+    """
+    return ItemToDownload(
+        file_name=file_specific_download_details.file_name,
+        download_url=file_specific_download_details.download_url,
+        file_path=file_specific_download_details.file_path.as_posix(),
+        source_id=file_specific_download_details.source_id,
+        reference_date=file_specific_download_details.reference_date.isoformat(),
+        size=file_specific_download_details.size,
+        md5sum=file_specific_download_details.md5sum,
+        is_partitioned=file_specific_download_details.is_partitioned,
+    )
+
+
+def filter_date_specific_info(
+    download_details: List[DownloadDetails],
+    date_to_filter: datetime.datetime,
+) -> List[ItemToDownload]:
+    """Filters the DownloadDetails matching a date and converts them in a list of dictionaries.
+
+    Parameters
+    ----------
+    download_details: List[DownloadDetails]
+        A list of DownloadDetails named-tuples.
+    date_to_filter: datetime.datetime
+        A datetime object expressing the date to filter.
+
+    Returns
+    -------
+    List[ItemToDownload]
+        A list of ItemToDownload typed-dictionaries having as a reference date the date passed as
+        an input.
+    """
+    return [
+        download_detail_to_dict(file) for file in download_details
+        if file.reference_date == date_to_filter
+    ]
+
+
+def generate_date_specific_path(
+    item_to_download: ItemToDownload,
+) -> str:
+    """Generated the a date-specific path for the download manifest file.
+
+    Parameters
+    ----------
+    item_to_download: ItemToDownload
+        A typed-dictionary containing file-specific download information.
+
+    Returns
+    -------
+    str
+        The path to the download manifest file, with the location in the 'day' leaf of
+        the directory tree (since the data is downloaded in a directory tree structured
+        as 'year/month/day/source/file-type/', the download manifest file is saved in
+        the day leaf of the directory tree, in a way that allows ex-post to check what
+        files were expected on that specific day and what characteristics they are
+        supposed to have).
+    """
+    date = item_to_download.get("reference_date")
+    parent_path = pathlib.Path(item_to_download.get("file_path")).parent.parent.parent
+    file_name = (
+        f"download_manifest_{datetime.datetime.fromisoformat(date).strftime('%Y%m%d')}.json"
+    )
+    return parent_path.joinpath(file_name).as_posix()
+
+
+def write_manifest_to_json(
+    items_to_download: List[ItemToDownload],
+    path_to_outfile: str,
+) -> None:
+    if not pathlib.Path(path_to_outfile).parent.exists():
+        pathlib.Path(path_to_outfile).parent.mkdir(parents=True, exist_ok=True)
+    with open(path_to_outfile, "w") as outfile:
+        json.dump(items_to_download, outfile, indent=2)
+
+
+def generate_manifest_file(download_details: List[DownloadDetails]) -> None:
+    unique_dates = {file.reference_date for file in download_details}
+    for date in unique_dates:
+        date_specific_items = filter_date_specific_info(download_details, date)
+        date_specific_path = generate_date_specific_path(date_specific_items[0])
+        write_manifest_to_json(date_specific_items, date_specific_path)
 
 
 def calculate_number_of_same_size_partitions(
