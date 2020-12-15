@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import urllib.parse
 
 from datavault_api_client.data_structures import (
+    ConcurrentDownloadManifest,
     DiscoveredFileInfo,
     DownloadDetails,
     ItemToDownload,
@@ -341,7 +342,7 @@ def generate_manifest_file(download_details: List[DownloadDetails]) -> None:
         write_manifest_to_json(date_specific_items, date_specific_path)
 
 
-def synchronous_download_pre_download_processor(
+def pre_synchronous_download_processor(
     discovered_files_info: List[DiscoveredFileInfo],
     path_to_data_directory: str,
 ) -> List[DownloadDetails]:
@@ -767,3 +768,44 @@ def prepare_download_manifests(
         partition_size_in_mib,
     )
     return whole_files_download_manifest, files_and_partitions_download_manifest
+
+
+def pre_concurrent_download_processor(
+    discovered_files_info: List[DiscoveredFileInfo],
+    path_to_data_directory: str,
+    partition_size_in_mib: float = 5.0,
+) -> ConcurrentDownloadManifest:
+    """Generates the download manifest for the concurrent download scenario.
+
+    Parameters
+    ----------
+    discovered_files_info: List[DiscoveredFileInfo]
+        A list of DiscoveredFileInfo named-tuples containing the raw download information.
+    path_to_data_directory: str
+        The full path to the directory where the data has to be written.
+    partition_size_in_mib: float
+        The size of the partitions in MiB. By default is set equal to 5.0 MiB.
+
+    Returns
+    -------
+    ConcurrentDownloadManifest
+        A ConcurrentDownloadManifest named tuple containing the download information for
+        the whole files, which is used as a reference for the post-download processes, and
+        the actual download manifest containing a mix of file-specific DownloadDetails and
+        PartitionDownloadDetails named-tuples, depending on whether a specific file
+        satisfied the conditions for partitioning or not.
+    """
+    download_details = process_all_discovered_files_info(
+        discovered_files_info,
+        path_to_data_directory,
+        partition_size_in_mib,
+        synchronous=False,
+    )
+    generate_manifest_file(download_details)
+    return ConcurrentDownloadManifest(
+        whole_files_reference=download_details,
+        concurrent_download_manifest=generate_whole_files_and_partitions_download_manifest(
+            download_details,
+            partition_size_in_mib,
+        ),
+    )
