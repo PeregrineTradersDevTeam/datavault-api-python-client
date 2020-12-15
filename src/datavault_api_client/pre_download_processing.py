@@ -7,7 +7,7 @@ manifest that is used by the downloading functions as a reference.
 import datetime
 import json
 import pathlib
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Optional, Tuple, Union
 import urllib.parse
 
 from datavault_api_client.data_structures import (
@@ -120,7 +120,7 @@ def process_raw_download_info(
     raw_download_info: DiscoveredFileInfo,
     path_to_data_folder: str,
     partition_size_in_mib: Optional[float] = None,
-    synchronous: bool = False
+    synchronous: bool = False,
 ) -> DownloadDetails:
     """Process the raw download information contained in a DiscoveredFileInfo named-tuple.
 
@@ -190,7 +190,7 @@ def process_all_discovered_files_info(
     discovered_files_info: List[DiscoveredFileInfo],
     path_to_data_directory: str,
     partition_size_in_mib: float = None,
-    synchronous: bool = False
+    synchronous: bool = False,
 ) -> List[DownloadDetails]:
     """Process the raw download details of all the files discovered by the crawler.
 
@@ -220,7 +220,7 @@ def process_all_discovered_files_info(
             file_info,
             path_to_data_directory,
             partition_size_in_mib,
-            synchronous
+            synchronous,
         )
         for file_info in discovered_files_info
     ]
@@ -310,6 +310,16 @@ def write_manifest_to_json(
     items_to_download: List[ItemToDownload],
     path_to_outfile: str,
 ) -> None:
+    """Writes the content of the download manifest to a JSON file.
+
+    Parameters
+    ----------
+    items_to_download: List[ItemToDownload]
+        A list of ItemToDownload typed-dictionaries.
+    path_to_outfile: str
+        The full path as a string, leading to the file where the download manifest has to
+        be written.
+    """
     if not pathlib.Path(path_to_outfile).parent.exists():
         pathlib.Path(path_to_outfile).parent.mkdir(parents=True, exist_ok=True)
     with open(path_to_outfile, "w") as outfile:
@@ -317,11 +327,49 @@ def write_manifest_to_json(
 
 
 def generate_manifest_file(download_details: List[DownloadDetails]) -> None:
+    """Creates and write a date-specific download manifest file.
+
+    Parameters
+    ----------
+    download_details: List[DownloadDetails]
+        A list of DownloadDetails named-tuples
+    """
     unique_dates = {file.reference_date for file in download_details}
     for date in unique_dates:
         date_specific_items = filter_date_specific_info(download_details, date)
         date_specific_path = generate_date_specific_path(date_specific_items[0])
         write_manifest_to_json(date_specific_items, date_specific_path)
+
+
+def synchronous_download_pre_download_processor(
+    discovered_files_info: List[DiscoveredFileInfo],
+    path_to_data_directory: str,
+) -> List[DownloadDetails]:
+    """Generates the download manifest for the synchronous download scenario.
+
+    Parameters
+    ----------
+    discovered_files_info: List[DiscoveredFileInfo]
+        A list of DiscoveredFileInfo named-tuples containing the raw download information.
+    path_to_data_directory: str
+        The full path to the directory where the data has to be written.
+
+    Returns
+    -------
+    List[DownloadDetails]
+        The download manifest for the synchronous download scenario, consisting in a list
+        of DownloadDetails named-tuples.
+    """
+    download_details = process_all_discovered_files_info(
+        discovered_files_info,
+        path_to_data_directory,
+        synchronous=True,
+    )
+    generate_manifest_file(download_details)
+    return download_details
+
+
+#########################################################################################
 
 
 def calculate_number_of_same_size_partitions(
@@ -683,13 +731,6 @@ def generate_whole_files_and_partitions_download_manifest(
             for partition_download_info in partitions_download_info:
                 whole_files_and_partition_download_manifest.append(partition_download_info)
     return whole_files_and_partition_download_manifest
-
-
-# def pre_download_processor_synchronous_download(
-#      discovered_files_info: List[DiscoveredFileInfo],
-#  ) -> List[DownloadDetails]:
-#      #  First convert the DiscoveredFileInfo named-tuples into DownloadDetails named-tuples
-#      download_details = process_all_discovered_files_info()
 
 
 def prepare_download_manifests(
