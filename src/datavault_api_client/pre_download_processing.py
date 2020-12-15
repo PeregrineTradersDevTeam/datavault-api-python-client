@@ -7,7 +7,7 @@ manifest that is used by the downloading functions as a reference.
 import datetime
 import json
 import pathlib
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Optional
 import urllib.parse
 
 from datavault_api_client.data_structures import (
@@ -119,7 +119,8 @@ def check_if_partitioned(file_size_in_bytes: int, partition_size_in_mib: float) 
 def process_raw_download_info(
     raw_download_info: DiscoveredFileInfo,
     path_to_data_folder: str,
-    partition_size_in_mib: float,
+    partition_size_in_mib: Optional[float] = None,
+    synchronous: bool = False
 ) -> DownloadDetails:
     """Process the raw download information contained in a DiscoveredFileInfo named-tuple.
 
@@ -141,6 +142,11 @@ def process_raw_download_info(
         The full path to the directory where the file will be downloaded.
     partition_size_in_mib: float
         The partition size in MiB.
+    synchronous: bool
+        A boolean flag, if set equal to True, it sets the is_partitioned field from the
+        ItemToDownload named tuple to None as the field is not used in synchronous downloads. By
+        default is set equal to False, assuming that the default download method is a
+        concurrent download, where the is_partitioned flag is used.
 
     Returns
     -------
@@ -149,6 +155,21 @@ def process_raw_download_info(
         path where the file will be downloaded, the file size, the md5sum digest, and a
         flag that informs whether the file is eligible to be split in multiple partitions.
     """
+    if synchronous:
+        return DownloadDetails(
+            file_name=raw_download_info.file_name,
+            download_url=raw_download_info.download_url,
+            file_path=generate_file_path_matching_datavault_structure(
+                path_to_data_folder,
+                file_name=raw_download_info.file_name,
+                datavault_download_url=raw_download_info.download_url,
+            ),
+            source_id=raw_download_info.source_id,
+            reference_date=raw_download_info.reference_date,
+            size=raw_download_info.size,
+            md5sum=raw_download_info.md5sum,
+            is_partitioned=None,
+        )
     return DownloadDetails(
         file_name=raw_download_info.file_name,
         download_url=raw_download_info.download_url,
@@ -168,7 +189,8 @@ def process_raw_download_info(
 def process_all_discovered_files_info(
     discovered_files_info: List[DiscoveredFileInfo],
     path_to_data_directory: str,
-    partition_size_in_mib: float,
+    partition_size_in_mib: float = None,
+    synchronous: bool = False
 ) -> List[DownloadDetails]:
     """Process the raw download details of all the files discovered by the crawler.
 
@@ -181,6 +203,11 @@ def process_all_discovered_files_info(
         The path to the directory where the data will be downloaded.
     partition_size_in_mib: float
         The size of the partitions in MiB.
+    synchronous: bool
+        A boolean flag, if set equal to True, it sets the is_partitioned field from the
+        ItemToDownload named tuple to None as the field is not used in synchronous downloads. By
+        default is set equal to False, assuming that the default download method is a
+        concurrent download, where the is_partitioned flag is used.
 
     Returns
     -------
@@ -189,12 +216,19 @@ def process_all_discovered_files_info(
         necessary to download a specific discovered file.
     """
     return [
-        process_raw_download_info(file_info, path_to_data_directory, partition_size_in_mib)
+        process_raw_download_info(
+            file_info,
+            path_to_data_directory,
+            partition_size_in_mib,
+            synchronous
+        )
         for file_info in discovered_files_info
     ]
 
 
-def download_detail_to_dict(file_specific_download_details: DownloadDetails) -> ItemToDownload:
+def download_detail_to_dict(
+    file_specific_download_details: DownloadDetails,
+) -> ItemToDownload:
     """Coverts a DownloadDetails named-tuple into an ItemToDownload typed-dictionary.
 
     Parameters
@@ -216,7 +250,6 @@ def download_detail_to_dict(file_specific_download_details: DownloadDetails) -> 
         reference_date=file_specific_download_details.reference_date.isoformat(),
         size=file_specific_download_details.size,
         md5sum=file_specific_download_details.md5sum,
-        is_partitioned=file_specific_download_details.is_partitioned,
     )
 
 
@@ -650,6 +683,13 @@ def generate_whole_files_and_partitions_download_manifest(
             for partition_download_info in partitions_download_info:
                 whole_files_and_partition_download_manifest.append(partition_download_info)
     return whole_files_and_partition_download_manifest
+
+
+# def pre_download_processor_synchronous_download(
+#      discovered_files_info: List[DiscoveredFileInfo],
+#  ) -> List[DownloadDetails]:
+#      #  First convert the DiscoveredFileInfo named-tuples into DownloadDetails named-tuples
+#      download_details = process_all_discovered_files_info()
 
 
 def prepare_download_manifests(
