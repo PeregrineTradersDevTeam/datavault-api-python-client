@@ -448,6 +448,127 @@ class TestWriteManifestToJson:
         # Cleanup - none
         path_to_outfile.unlink()
 
+
+class TestGenerateManifestFile:
+    def test_generation_of_manifest_file(
+        self,
+        mocked_download_info_single_source_multiple_days_concurrent,
+    ):
+        # Setup - none
+        # Exercise
+        pdp.generate_manifest_file(mocked_download_info_single_source_multiple_days_concurrent)
+        # Verify
+        expected_file_content_20200717 = [
+            {
+                "file_name": "COREREF_207_20200717.txt.bz2",
+                "download_url": (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CORE/"
+                    "20200717-S207_CORE_ALL_0_0"
+                ),
+                "file_path": pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/17/S207/CORE/COREREF_207_20200717.txt.bz2"
+                ).as_posix(),
+                "source_id": 207,
+                "reference_date": "2020-07-17T00:00:00",
+                "size": 3910430,
+                "md5sum": "63958e5bc651b95da410e76a1763dde7"
+            },
+            {
+                "file_name": "CROSSREF_207_20200717.txt.bz2",
+                "download_url": (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CROSS/"
+                    "20200717-S207_CROSS_ALL_0_0"
+                ),
+                "file_path": pathlib.Path(__file__).resolve().parent.joinpath(
+                             "Temp/Data/2020/07/17/S207/CROSS/CROSSREF_207_20200717.txt.bz2"
+                ).as_posix(),
+                "source_id": 207,
+                "reference_date": "2020-07-17T00:00:00",
+                "size": 13816558,
+                "md5sum": "d1316740714e9b13cf03acf02a23c596"
+            },
+            {
+                "file_name": "WATCHLIST_207_20200717.txt.bz2",
+                "download_url": (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/"
+                    "WATCHLIST/20200717-S207_WATCHLIST_username_0_0"
+                ),
+                "file_path": pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/17/S207/WATCHLIST/WATCHLIST_207_20200717.txt.bz2"
+                ).as_posix(),
+                "source_id": 207,
+                "reference_date": "2020-07-17T00:00:00",
+                "size": 63958346,
+                "md5sum": "9be9099186dfd8a7e0012e58fd49a3da"
+            },
+        ]
+        expected_file_content_20200720 = [
+            {
+                "file_name": "COREREF_207_20200720.txt.bz2",
+                "download_url": (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CORE/"
+                    "20200720-S207_CORE_ALL_0_0"
+                ),
+                "file_path": pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/20/S207/CORE/COREREF_207_20200720.txt.bz2"
+                ).as_posix(),
+                "source_id": 207,
+                "reference_date": "2020-07-20T00:00:00",
+                "size": 4548016,
+                "md5sum": "a46a5f07b6a402d4023ef550df6a12e4"
+            },
+            {
+                "file_name": "CROSSREF_207_20200720.txt.bz2",
+                "download_url": (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CROSS/"
+                    "20200720-S207_CROSS_ALL_0_0"
+                ),
+                "file_path": pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/20/S207/CROSS/CROSSREF_207_20200720.txt.bz2"
+                ).as_posix(),
+                "source_id": 207,
+                "reference_date": "2020-07-20T00:00:00",
+                "size": 14571417,
+                "md5sum": "6b3dbd152e7dccf4147f62b6ce1c78c3"
+            },
+            {
+                "file_name": "WATCHLIST_207_20200720.txt.bz2",
+                "download_url": (
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/"
+                    "WATCHLIST/20200720-S207_WATCHLIST_username_0_0"
+                ),
+                "file_path": pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/20/S207/WATCHLIST/WATCHLIST_207_20200720.txt.bz2"
+                ).as_posix(),
+                "source_id": 207,
+                "reference_date": "2020-07-20T00:00:00",
+                "size": 70613654,
+                "md5sum": "ba2c00511520a3cf4b5383ceedb3b41d"
+            },
+        ]
+        with pathlib.Path(__file__).resolve().parent.joinpath(
+            "Temp/Data/2020/07/17/download_manifest_20200717.json"
+        ).open("r") as infile:
+            download_manifest_20200717_content = json.load(infile)
+            assert download_manifest_20200717_content == expected_file_content_20200717
+
+        with pathlib.Path(__file__).resolve().parent.joinpath(
+            "Temp/Data/2020/07/20/download_manifest_20200720.json"
+        ).open("r") as infile:
+            download_manifest_20200720_content = json.load(infile)
+            assert download_manifest_20200720_content == expected_file_content_20200720
+        # Cleanup
+        pathlib.Path(__file__).resolve().parent.joinpath(
+            "Temp/Data/2020/07/17/download_manifest_20200717.json"
+        ).unlink()
+        pathlib.Path(__file__).resolve().parent.joinpath(
+            "Temp/Data/2020/07/20/download_manifest_20200720.json"
+        ).unlink()
+        directory_root = pathlib.Path(__file__).resolve().parent / "Temp"
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
+
+
 ##########################################################################################
 
 
