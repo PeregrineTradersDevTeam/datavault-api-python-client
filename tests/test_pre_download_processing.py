@@ -1,9 +1,9 @@
 import pathlib
-
+import datetime
 import pytest
-
+import json
 from datavault_api_client import pre_download_processing as pdp
-from datavault_api_client.data_structures import DownloadDetails
+from datavault_api_client.data_structures import DownloadDetails, ItemToDownload
 
 
 class TestGenerateFilePathMatchingDatavaultStructure:
@@ -83,7 +83,7 @@ class TestCheckIfPartitioned:
 
 
 class TestProcessRawDownloadInfo:
-    def test_processing_of_raw_download_info(
+    def test_processing_of_raw_download_info_with_synchronous_flag_set_to_false(
         self,
         mocked_set_of_files_available_to_download_single_instrument
     ):
@@ -105,9 +105,42 @@ class TestProcessRawDownloadInfo:
             file_path=pathlib.Path(__file__).resolve().parent.joinpath(
                 "Data", "2020", "07", "16", "S367", "WATCHLIST", "WATCHLIST_367_20200716.txt.bz2"
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=16),
             size=100145874,
             md5sum="fb34325ec9262adc74c945a9e7c9b465",
             is_partitioned=True,
+        )
+        # noinspection PyUnboundLocalVariable
+        assert processed_download_details == correct_download_details
+        # Cleanup - none
+
+    def test_processing_of_raw_download_info_with_synchronous_flag_set_to_true(
+        self,
+        mocked_set_of_files_available_to_download_single_instrument
+    ):
+        # Setup
+        path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
+        # Exercise
+        for file_details in mocked_set_of_files_available_to_download_single_instrument:
+            processed_download_details = pdp.process_raw_download_info(
+                file_details, path_to_data_folder, synchronous=True,
+            )
+        # Verify
+        correct_download_details = DownloadDetails(
+            file_name="WATCHLIST_367_20200716.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/WATCHLIST/"
+                "20200716-S367_WATCHLIST_username_0_0"
+            ),
+            file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                "Data", "2020", "07", "16", "S367", "WATCHLIST", "WATCHLIST_367_20200716.txt.bz2"
+            ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=16),
+            size=100145874,
+            md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            is_partitioned=None,
         )
         # noinspection PyUnboundLocalVariable
         assert processed_download_details == correct_download_details
@@ -130,10 +163,47 @@ class TestProcessAllDiscoveredFilesInfo:
             partition_size_in_mb,
         )
         # Verify
-        assert (
-            list_of_processed_download_details
-            == mocked_list_of_whole_files_download_details_single_source_single_day
+        expected_result = (
+            mocked_list_of_whole_files_download_details_single_source_single_day
         )
+        assert list_of_processed_download_details == expected_result
+        # Cleanup - none
+
+    def test_processing_of_all_discovered_files_info_with_synchronous_flag(
+        self,
+        mocked_set_of_files_available_to_download_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day_synchronous_case,
+    ):
+        # Setup
+        path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
+        # Exercise
+        list_of_processed_download_details = pdp.process_all_discovered_files_info(
+            mocked_set_of_files_available_to_download_single_source_single_day,
+            path_to_data_folder,
+            synchronous=True,
+        )
+        # Verify
+        expected_result = (
+            mocked_whole_files_download_details_single_source_single_day_synchronous_case
+        )
+        assert list_of_processed_download_details == expected_result
+        # Cleanup - none
+
+    def test_processing_of_all_discovered_files_info_with_synchronous_flag_off(
+        self,
+        mocked_set_of_files_available_to_download_single_source_multiple_days,
+        mocked_download_info_single_source_multiple_days_synchronous,
+    ):
+        # Setup
+        path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Temp" / "Data"
+        # Exercise
+        list_of_processed_download_details = pdp.process_all_discovered_files_info(
+            mocked_set_of_files_available_to_download_single_source_multiple_days,
+            path_to_data_folder,
+            synchronous=True,
+        )
+        # Verify
+        assert list_of_processed_download_details == mocked_download_info_single_source_multiple_days_synchronous
         # Cleanup - none
 
 
@@ -567,8 +637,10 @@ class TestFilterFilesToSplit:
                     "20200721-S207_CROSS_ALL_0_0"
                 ),
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
-                "Data", "2020", "07", "21", "S207", "CROSS", "CROSSREF_207_20200721.txt.bz2",
+                    "Data", "2020", "07", "21", "S207", "CROSS", "CROSSREF_207_20200721.txt.bz2",
                 ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
                 size=14690557,
                 md5sum="f2683cd87a7b29f3b8776373d56a8456",
                 is_partitioned=True,
@@ -583,6 +655,8 @@ class TestFilterFilesToSplit:
                     "Data", "2020", "07", "21", "S207", "WATCHLIST",
                     "WATCHLIST_207_20200721.txt.bz2",
                 ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
                 size=72293374,
                 md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
                 is_partitioned=True,
@@ -594,8 +668,11 @@ class TestFilterFilesToSplit:
                     "WATCHLIST/20200721-S367_WATCHLIST_username_0_0"
                 ),
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
-                "Data", "2020", "07", "21", "S367", "WATCHLIST", "WATCHLIST_367_20200721.txt.bz2",
+                    "Data", "2020", "07", "21", "S367", "WATCHLIST",
+                    "WATCHLIST_367_20200721.txt.bz2",
                 ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
                 size=82451354,
                 md5sum="62df718ef5eb5f9f1ea3f6ea1f826c30",
                 is_partitioned=True,
