@@ -1216,3 +1216,34 @@ class TestPrepareDownloadManifests:
             == mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
         )
         # Cleanup - none
+
+
+class TestPreConcurrentDownloadProcessor:
+    def test_pre_concurrent_download_data_processing(
+        self,
+        mocked_set_of_files_available_to_download_single_source_single_day,
+        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
+        mocked_list_of_whole_files_download_details_single_source_single_day,
+    ):
+        # Setup
+        discovered_files_info = mocked_set_of_files_available_to_download_single_source_single_day
+        path_to_data_directory = pathlib.Path(__file__).resolve().parent.joinpath("Data").as_posix()
+        # Exercise
+        download_manifest = pdp.pre_concurrent_download_processor(
+            discovered_files_info,
+            path_to_data_directory,
+        )
+        # Verify
+        whole_files = mocked_list_of_whole_files_download_details_single_source_single_day
+        concurrent_manifest = (
+            mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
+        )
+        assert download_manifest.whole_files_reference == whole_files
+        assert download_manifest.concurrent_download_manifest == concurrent_manifest[0]
+        # Cleanup
+        pathlib.Path(__file__).resolve().parent.joinpath(
+            "Data/2020/07/22/download_manifest_20200722.json"
+        ).unlink()
+        directory_root = pathlib.Path(__file__).resolve().parent / "Data"
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
