@@ -148,7 +148,7 @@ class TestProcessRawDownloadInfo:
 
 
 class TestProcessAllDiscoveredFilesInfo:
-    def test_processing_of_all_discovered_files_info(
+    def test_processing_of_all_discovered_files_info_with_synchronous_flag_set_to_false(
         self,
         mocked_set_of_files_available_to_download_single_source_single_day,
         mocked_list_of_whole_files_download_details_single_source_single_day,
@@ -169,7 +169,7 @@ class TestProcessAllDiscoveredFilesInfo:
         assert list_of_processed_download_details == expected_result
         # Cleanup - none
 
-    def test_processing_of_all_discovered_files_info_with_synchronous_flag(
+    def test_processing_of_all_discovered_files_info_with_synchronous_flag_set_to_true(
         self,
         mocked_set_of_files_available_to_download_single_source_single_day,
         mocked_whole_files_download_details_single_source_single_day_synchronous_case,
@@ -189,7 +189,7 @@ class TestProcessAllDiscoveredFilesInfo:
         assert list_of_processed_download_details == expected_result
         # Cleanup - none
 
-    def test_processing_of_all_discovered_files_info_with_synchronous_flag_off(
+    def test_processing_of_all_discovered_files_info_on_multiple_days_with_synchronous_flag_on(
         self,
         mocked_set_of_files_available_to_download_single_source_multiple_days,
         mocked_download_info_single_source_multiple_days_synchronous,
@@ -203,7 +203,27 @@ class TestProcessAllDiscoveredFilesInfo:
             synchronous=True,
         )
         # Verify
-        assert list_of_processed_download_details == mocked_download_info_single_source_multiple_days_synchronous
+        expected_result = mocked_download_info_single_source_multiple_days_synchronous
+        assert list_of_processed_download_details == expected_result
+        # Cleanup - none
+
+    def test_processing_of_all_discovered_files_info_on_multiple_days_with_synchronous_flag_off(
+        self,
+        mocked_set_of_files_available_to_download_single_source_multiple_days,
+        mocked_download_info_single_source_multiple_days_concurrent,
+    ):
+        # Setup
+        path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Temp" / "Data"
+        # Exercise
+        list_of_processed_download_details = pdp.process_all_discovered_files_info(
+            mocked_set_of_files_available_to_download_single_source_multiple_days,
+            path_to_data_folder,
+            partition_size_in_mib=5.0,
+            synchronous=False,
+        )
+        # Verify
+        expected_result = mocked_download_info_single_source_multiple_days_concurrent
+        assert list_of_processed_download_details == expected_result
         # Cleanup - none
 
 
