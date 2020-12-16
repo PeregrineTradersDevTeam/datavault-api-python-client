@@ -381,6 +381,73 @@ class TestGenerateDateSpecificPath:
         assert date_specific_path == expected_path
         # Cleanup - none
 
+
+class TestWriteManifestToJson:
+    def test_json_writer(self):
+        # Setup
+        file_payload = [
+            ItemToDownload(
+                file_name="WATCHLIST_367_20201211.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/11/S367/"
+                    "WATCHLIST/20201211-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "12", "11", "S367", "WATCHLIST",
+                    "WATCHLIST_367_20201211.txt.bz2"
+                ).as_posix(),
+                source_id=367,
+                reference_date="2020-12-11T00:00:00",
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            ),
+        ]
+        path_to_outfile = pathlib.Path(__file__).resolve().parent.joinpath(
+            "static_data", "Temp", "2020", "12", "11", "download_manifest_20201211.json"
+        )
+        # Exercise
+        pdp.write_manifest_to_json(file_payload, path_to_outfile)
+        # Verify
+        with path_to_outfile.open("r") as infile:
+            file_content = json.load(infile)
+        assert file_content == file_payload
+        # Cleanup - none
+        path_to_outfile.unlink()
+        directory_root = pathlib.Path(__file__).resolve().parent / "static_data" / "Temp"
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
+
+    def test_json_writer_with_existing_directory(self):
+        # Setup
+        file_payload = [
+            ItemToDownload(
+                file_name="WATCHLIST_367_20201211.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/11/S367/"
+                    "WATCHLIST/20201211-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "12", "11", "S367", "WATCHLIST",
+                    "WATCHLIST_367_20201211.txt.bz2"
+                ).as_posix(),
+                source_id=367,
+                reference_date="2020-12-11T00:00:00",
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            ),
+        ]
+        path_to_outfile = pathlib.Path(__file__).resolve().parent.joinpath(
+            "static_data", "download_manifest_20201211.json"
+        )
+        # Exercise
+        pdp.write_manifest_to_json(file_payload, path_to_outfile)
+        # Verify
+        with path_to_outfile.open("r") as infile:
+            file_content = json.load(infile)
+        assert file_content == file_payload
+        # Cleanup - none
+        path_to_outfile.unlink()
+
 ##########################################################################################
 
 
