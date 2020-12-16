@@ -227,6 +227,49 @@ class TestProcessAllDiscoveredFilesInfo:
         # Cleanup - none
 
 
+class TestDownloadDetailToDict:
+    def test_conversion_to_typed_dict(self):
+        # Setup
+        download_details_to_convert = DownloadDetails(
+            file_name="WATCHLIST_367_20200716.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/WATCHLIST/"
+                "20200716-S367_WATCHLIST_username_0_0"
+            ),
+            file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                "Data", "2020", "07", "16", "S367", "WATCHLIST", "WATCHLIST_367_20200716.txt.bz2"
+            ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=16),
+            size=100145874,
+            md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            is_partitioned=True,
+        )
+        # Exercise
+        converted_info = pdp.download_detail_to_dict(download_details_to_convert)
+        # Verify
+        expected_info = ItemToDownload(
+            file_name="WATCHLIST_367_20200716.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/WATCHLIST/"
+                "20200716-S367_WATCHLIST_username_0_0"
+            ),
+            file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                "Data", "2020", "07", "16", "S367", "WATCHLIST", "WATCHLIST_367_20200716.txt.bz2"
+            ).as_posix(),
+            source_id=367,
+            reference_date="2020-07-16T00:00:00",
+            size=100145874,
+            md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            is_partitioned=True
+        )
+        assert converted_info == expected_info
+        # Cleanup - none
+
+
+##########################################################################################
+
+
 class TestCalculateNumberOfSameSizePartitions:
     @pytest.mark.parametrize(
         "file_size_in_bytes, partition_size_in_mib, correct_number_of_same_size_partitions",
