@@ -569,6 +569,125 @@ class TestGenerateManifestFile:
             directory.rmdir()
 
 
+class TestPreSynchronousDownloadProcessor:
+    def test_pre_synchronous_download_data_processing(
+        self,
+        mocked_set_of_files_available_to_download_single_source_single_day
+    ):
+        # Setup
+        discovered_files_info = mocked_set_of_files_available_to_download_single_source_single_day
+        path_to_data_directory = pathlib.Path(__file__).resolve().parent.joinpath("Temp/Data")
+        # Exercise
+        download_details = pdp.pre_synchronous_download_processor(
+            discovered_files_info,
+            path_to_data_directory,
+        )
+        # Verify
+        expected_download_details = [
+            DownloadDetails(
+                file_name="COREREF_945_20200722.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CORE/"
+                    "20200722-S945_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/22/S945/CORE", "COREREF_945_20200722.txt.bz2"
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=7, day=22),
+                size=17734,
+                md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
+                is_partitioned=None,
+            ),
+            DownloadDetails(
+                file_name="CROSSREF_945_20200722.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CROSS/"
+                    "20200722-S945_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/22/S945/CROSS", "CROSSREF_945_20200722.txt.bz2"
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=7, day=22),
+                size=32822,
+                md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
+                is_partitioned=None,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_945_20200722.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/"
+                    "WATCHLIST/20200722-S945_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722.txt.bz2"
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=7, day=22),
+                size=61663360,
+                md5sum="78571e930fb12fcfb2fb70feb07c7bcf",
+                is_partitioned=None,
+            ),
+        ]
+        expected_content_of_manifest_file = [
+            ItemToDownload(
+                file_name="COREREF_945_20200722.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CORE/"
+                    "20200722-S945_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/22/S945/CORE", "COREREF_945_20200722.txt.bz2"
+                ).as_posix(),
+                source_id=945,
+                reference_date="2020-07-22T00:00:00",
+                size=17734,
+                md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
+            ),
+            ItemToDownload(
+                file_name="CROSSREF_945_20200722.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CROSS/"
+                    "20200722-S945_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/22/S945/CROSS", "CROSSREF_945_20200722.txt.bz2"
+                ).as_posix(),
+                source_id=945,
+                reference_date="2020-07-22T00:00:00",
+                size=32822,
+                md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
+            ),
+            ItemToDownload(
+                file_name="WATCHLIST_945_20200722.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/"
+                    "WATCHLIST/20200722-S945_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Temp/Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722.txt.bz2"
+                ).as_posix(),
+                source_id=945,
+                reference_date="2020-07-22T00:00:00",
+                size=61663360,
+                md5sum="78571e930fb12fcfb2fb70feb07c7bcf",
+            ),
+        ]
+        assert download_details == expected_download_details
+        with pathlib.Path(__file__).resolve().parent.joinpath(
+            "Temp/Data/2020/07/22/download_manifest_20200722.json"
+        ).open("r") as infile:
+            manifest_file_content = json.load(infile)
+        assert manifest_file_content == expected_content_of_manifest_file
+        # Cleanup - none
+        pathlib.Path(__file__).resolve().parent.joinpath(
+            "Temp/Data/2020/07/22/download_manifest_20200722.json"
+        ).unlink()
+        directory_root = pathlib.Path(__file__).resolve().parent / "Temp"
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
+
 ##########################################################################################
 
 
