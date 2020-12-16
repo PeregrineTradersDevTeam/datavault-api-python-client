@@ -354,6 +354,33 @@ class TestFilterDateSpecificInfo:
         assert date_specific_info == []
         # Cleanup - none
 
+
+class TestGenerateDateSpecificPath:
+    def test_generation_of_date_specific_path(self):
+        # Setup
+        item_to_download = ItemToDownload(
+            file_name="WATCHLIST_367_20200716.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/WATCHLIST/"
+                "20200716-S367_WATCHLIST_username_0_0"
+            ),
+            file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                "Data", "2020", "07", "16", "S367", "WATCHLIST", "WATCHLIST_367_20200716.txt.bz2"
+            ).as_posix(),
+            source_id=367,
+            reference_date="2020-07-16T00:00:00",
+            size=100145874,
+            md5sum="fb34325ec9262adc74c945a9e7c9b465",
+        )
+        # Exercise
+        date_specific_path = pdp.generate_date_specific_path(item_to_download)
+        # Verify
+        expected_path = pathlib.Path(__file__).resolve().parent.joinpath(
+            "Data", "2020", "07", "16", "download_manifest_20200716.json",
+        ).as_posix()
+        assert date_specific_path == expected_path
+        # Cleanup - none
+
 ##########################################################################################
 
 
