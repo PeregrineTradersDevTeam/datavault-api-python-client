@@ -261,11 +261,98 @@ class TestDownloadDetailToDict:
             reference_date="2020-07-16T00:00:00",
             size=100145874,
             md5sum="fb34325ec9262adc74c945a9e7c9b465",
-            is_partitioned=True
         )
         assert converted_info == expected_info
         # Cleanup - none
 
+
+class TestFilterDateSpecificInfo:
+    def test_filtering_of_date_specific_info(
+        self,
+        mocked_download_info_single_source_multiple_days_concurrent,
+    ):
+        # Setup
+        # Exercise
+        date_specific_info = pdp.filter_date_specific_info(
+            mocked_download_info_single_source_multiple_days_concurrent,
+            datetime.datetime(year=2020, month=7, day=20),
+        )
+        # Verify
+        expected_info = [
+            ItemToDownload(
+                file_name='COREREF_207_20200720.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CORE/'
+                    '20200720-S207_CORE_ALL_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Temp/Data/', '2020/07/20/S207/CORE/COREREF_207_20200720.txt.bz2'
+                ).as_posix(),
+                source_id=207,
+                reference_date="2020-07-20T00:00:00",
+                size=4548016,
+                md5sum='a46a5f07b6a402d4023ef550df6a12e4',
+            ),
+            ItemToDownload(
+                file_name='CROSSREF_207_20200720.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CROSS/'
+                    '20200720-S207_CROSS_ALL_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Temp/Data/', '2020/07/20/S207/CROSS/CROSSREF_207_20200720.txt.bz2'
+                ).as_posix(),
+                source_id=207,
+                reference_date="2020-07-20T00:00:00",
+                size=14571417,
+                md5sum='6b3dbd152e7dccf4147f62b6ce1c78c3',
+            ),
+            ItemToDownload(
+                file_name='WATCHLIST_207_20200720.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/WATCHLIST/'
+                    '20200720-S207_WATCHLIST_username_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Temp/Data/', '2020/07/20/S207/WATCHLIST/WATCHLIST_207_20200720.txt.bz2'
+                ).as_posix(),
+                source_id=207,
+                reference_date="2020-07-20T00:00:00",
+                size=70613654,
+                md5sum='ba2c00511520a3cf4b5383ceedb3b41d',
+            ),
+        ]
+        assert date_specific_info == expected_info
+        # Cleanup - none
+
+    def test_filtering_of_date_specific_info_with_no_match(self):
+        # Setup
+        download_details = [
+            DownloadDetails(
+                file_name="WATCHLIST_367_20201214.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/14/S367/"
+                    "WATCHLIST/20201214-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "12", "14", "S367", "WATCHLIST",
+                    "WATCHLIST_367_20201214.txt.bz2"
+                ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=12, day=14),
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+                is_partitioned=True,
+            ),
+        ]
+        # Exercise
+        date_specific_info = pdp.filter_date_specific_info(
+            download_details,
+            datetime.datetime(year=2020, month=12, day=15),
+        )
+        # Verify
+        assert date_specific_info == []
+        # Cleanup - none
 
 ##########################################################################################
 
