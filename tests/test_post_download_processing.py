@@ -570,7 +570,6 @@ class TestGetAllMissingPartitions:
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
 
-
     def test_scenario_of_no_missing_partitions(
         self,
         mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
@@ -642,5 +641,154 @@ class TestGetAllMissingPartitions:
         directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
+
+
+class TestGetFilesWithMissingPartitions:
+    def test_identification_of_files_with_missing_partitions(
+        self,
+        # mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_download_details_multiple_sources_single_day
+    ):
+        # Setup
+        missing_partitions = [
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_207_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/'
+                    'WATCHLIST/20200721-S207_WATCHLIST_username_0_0?start=52428801&end=57671680'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S207', 'WATCHLIST',
+                    'WATCHLIST_207_20200721_11.txt',
+                ),
+                partition_index=11,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_367_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/'
+                    'S367/WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
+                    '?start=73400321&end=78643200'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'WATCHLIST_367_20200721_15.txt',
+                ),
+                partition_index=15,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_367_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/'
+                    'S367/WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
+                    '?start=78643201&end=82451354'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'WATCHLIST_367_20200721_16.txt',
+                ),
+                partition_index=16,
+            )
+        ]
+        # Exercise
+        files_with_missing_partitions = pdp.get_files_with_missing_partitions(
+                mocked_download_details_multiple_sources_single_day,
+                missing_partitions,
+        )
+        # Verify
+        expected_files_with_missing_partitions = [
+            DownloadDetails(
+                file_name='WATCHLIST_207_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/'
+                    'WATCHLIST/20200721-S207_WATCHLIST_username_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S207', 'WATCHLIST',
+                    'WATCHLIST_207_20200721.txt.bz2',
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=72293374,
+                md5sum='36e444a8362e7db52af50ee0f8dc0d2e',
+                is_partitioned=True),
+            DownloadDetails(
+                file_name='WATCHLIST_367_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/'
+                    'WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'WATCHLIST_367_20200721.txt.bz2'
+                ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=82451354,
+                md5sum='62df718ef5eb5f9f1ea3f6ea1f826c30',
+                is_partitioned=True),
+        ]
+        assert files_with_missing_partitions == expected_files_with_missing_partitions
+        # Cleanup - none
+
+    def test_scenario_of_single_file_with_missing_partitions(
+        self,
+        mocked_download_details_multiple_sources_single_day
+    ):
+        # Setup
+        missing_partitions = [
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_207_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/'
+                    'WATCHLIST/20200721-S207_WATCHLIST_username_0_0?start=52428801&end=57671680'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S207', 'WATCHLIST',
+                    'WATCHLIST_207_20200721_11.txt',
+                ),
+                partition_index=11,
+            ),
+        ]
+        # Exercise
+        files_with_missing_partitions = pdp.get_files_with_missing_partitions(
+                mocked_download_details_multiple_sources_single_day,
+                missing_partitions,
+        )
+        # Verify
+        expected_files_with_missing_partitions = [
+            DownloadDetails(
+                file_name='WATCHLIST_207_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/'
+                    'WATCHLIST/20200721-S207_WATCHLIST_username_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S207', 'WATCHLIST',
+                    'WATCHLIST_207_20200721.txt.bz2',
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=72293374,
+                md5sum='36e444a8362e7db52af50ee0f8dc0d2e',
+                is_partitioned=True),
+        ]
+        assert files_with_missing_partitions == expected_files_with_missing_partitions
+        # Cleanup - none
+
+    def test_scenario_of_no_missing_partitions(
+        self,
+        mocked_download_details_multiple_sources_single_day
+    ):
+        # Setup
+        missing_partitions = []
+        # Exercise
+        files_with_missing_partitions = pdp.get_files_with_missing_partitions(
+                mocked_download_details_multiple_sources_single_day,
+                missing_partitions,
+        )
+        # Verify
+        assert files_with_missing_partitions == []
+        # Cleanup - none
 
 
