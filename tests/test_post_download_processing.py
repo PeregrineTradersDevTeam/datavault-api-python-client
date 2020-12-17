@@ -792,3 +792,107 @@ class TestGetFilesWithMissingPartitions:
         # Cleanup - none
 
 
+class TestGetFilesReadyForConcatenation:
+    def test_identification_of_files_ready_for_concatenation(
+        self,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_details = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = [
+            DownloadDetails(
+                file_name="WATCHLIST_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/"
+                    "WATCHLIST/20200721-S207_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "07", "21", "S207", "WATCHLIST",
+                    "WATCHLIST_207_20200721.txt.bz2",
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=72293374,
+                md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
+                is_partitioned=True,
+            )
+        ]
+        # Exercise
+        computed_files_ready_for_concatenation = (
+            pdp.get_files_ready_for_concatenation(
+                whole_files_download_details,
+                files_with_missing_partitions,
+            )
+        )
+        # Verify
+        expected_files_to_concatenate = [
+            'CROSSREF_207_20200721.txt.bz2',
+            'WATCHLIST_367_20200721.txt.bz2',
+        ]
+        expected_files_ready_for_concatenation = [
+            item for item in whole_files_download_details
+            if item.file_name in expected_files_to_concatenate
+        ]
+        assert computed_files_ready_for_concatenation == expected_files_ready_for_concatenation
+        # Cleanup - none
+
+    def test_no_file_ready_for_concatenation_scenario(
+        self,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_details = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = mocked_download_details_multiple_sources_single_day
+        # Exercise
+        files_ready_for_concatenation = (
+            pdp.get_files_ready_for_concatenation(
+                whole_files_download_details,
+                files_with_missing_partitions,
+            )
+        )
+        # Verify
+        assert files_ready_for_concatenation == []
+        # Cleanup - none
+
+
+class TestConcatenatePartitions:
+    def test_concatenation_of_files(self):
+        # Setup
+        base_path = pathlib.Path(__file__).resolve().parent.joinpath(
+            'Temp', '2020', '07', '21', 'CROSS',
+        )
+        base_path.mkdir(parents=True, exist_ok=True)
+        file_names = [
+            'CROSSREF_207_20200721_1.txt',
+            'CROSSREF_207_20200721_2.txt',
+            'CROSSREF_207_20200721_3.txt',
+        ]
+
+        concatenated_content = b''
+
+        for file_name in file_names:
+            fpath = base_path / file_name
+            with fpath.open('wb') as outfile:
+                random_byte_content = os.urandom(500)
+                concatenated_content += random_byte_content
+                outfile.write(random_byte_content)
+
+        path_to_output_file = base_path / 'CROSSREF_207_20200721.txt.bz2'
+        # Execute
+        concatenated_file = pdp.concatenate_partitions(
+            path_to_output_file)
+        # Verify
+        assert concatenated_file == path_to_output_file.as_posix()
+
+        with path_to_output_file.open('rb') as infile:
+            file_content = infile.read()
+
+        assert file_content == concatenated_content
+        # Cleanup
+        # First, remove all the created files
+        for file in list(base_path.glob('**/*.bz2')):
+            file.unlink()
+        # Then remove all the created folders iteratively:
+        directory_root = pathlib.Path(__file__).resolve().parent / 'Temp'
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
