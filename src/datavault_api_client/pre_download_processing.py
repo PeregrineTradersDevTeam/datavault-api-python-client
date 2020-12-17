@@ -657,6 +657,7 @@ def create_list_of_file_specific_partition_download_info(
                 file_specific_download_info.file_path,
                 partition_index,
             ),
+            partition_index=partition_index+1,
         )
         for partition_index, extremities in enumerate(file_partitions)
     ]
