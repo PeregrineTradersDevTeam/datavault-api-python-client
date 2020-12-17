@@ -1,23 +1,87 @@
-"""Implements the post-download processing functions."""
+"""Implements the post-download processing functions.
+
+The post-download processing phase is differentiated by the type of the download that took
+place (a synchronous or a concurrent download).
+
+If a synchronous download took place, the post-download processing phase is as simple as
+feeding to the function that tests the data integrity, the entire list of DownloadDetails
+named-tuples containing the file-specific information of each file that has been
+downloaded. The data integrity testing functions check if all the files have the expected
+characteristics and, if any file fails the integrity test (meaning that it was not
+completely or properly downloaded) it is included in a list of files whose download has
+to be repeated.
+
+If a concurrent download took place, at the end of the download process we will have a mix
+of files and partitions that have been downloaded, depending on whether a file was
+eligible to be partitioned given its size and the multi-part threshold. For the files that
+have been downloaded as a whole, the post download processing is the same as in the case
+of the synchronous download, they are just passed to the data integrity testing functions
+and, if their characteristics differ from the expected ones, they are added to the list of
+downloads to retry and the file download information are included in a list containing the
+reference data of each file whose download has to be retried. In the case of partitioned
+files, instead, the process is more involved. First, for each partitioned file,
+the program checks the partitions corresponding to that file that have been downloaded;
+if the list of found partitions match the expected list of partitions that was defined
+pre-download, then the file is added to a list of files that are ready for the
+concatenation phase. If, instead, any missing partition is detected, the missing
+partitions are immediately added to a list of partitions to retry, and the corresponding
+file information are added to the list containing the reference data of those files whose
+download is to be repeated. All those files that have all the partitions downloaded are
+then hand over to the concatenating functions that concatenate all the partitions in a
+sequential order. The newly concatenated files are then passed to the integrity testing
+functions and, if any file fails the integrity test, its partitions are added to the list
+of files and partitions whose download is to be repeated.
+"""
 
 import pathlib
 import shutil
 from typing import Any, List, Tuple, Union
-
+import itertools
 from datavault_api_client.data_integrity import get_list_of_failed_downloads
-from datavault_api_client.data_structures import DownloadDetails, PartitionDownloadDetails
+from datavault_api_client.data_structures import (
+    ConcurrentDownloadManifest,
+    DownloadDetails,
+    PartitionDownloadDetails,
+)
 from datavault_api_client.pre_download_processing import filter_files_to_split
 
 
+# def post_download_processing(
+#     downloaded_files: List[DownloadDetails],
+#     synchronous: bool = False,
+# ) -> List[DownloadDetails]:
+#     if synchronous:
+#         return get_list_of_failed_downloads(downloaded_files)
+
+
+##########################################################################################
+
+
+def get_non_partitioned_files(
+    whole_files_reference_data: List[DownloadDetails],
+) -> List[DownloadDetails]:
+    return [file for file in whole_files_reference_data if file.is_partitioned is False]
+
+
+def get_partitioned_files(
+    whole_files_reference_data: List[DownloadDetails],
+) -> List[DownloadDetails]:
+    return list(
+        set(whole_files_reference_data).difference(
+            set(get_non_partitioned_files(whole_files_reference_data))
+        )
+    )
+
+
 def get_partitions_download_details(
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
-    file_name: str = None,
+    concurrent_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
+    file_name: str = None
 ) -> List[PartitionDownloadDetails]:
     """Filters from the download manifest the PartitionDownloadDetails named-tuples.
 
     Parameters
     ----------
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
+    concurrent_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
         A list of DownloadDetails and PartitionDownloadDetails named-tuples, constituting
         the  download manifest of all the whole files and file partitions to download.
     file_name: str
@@ -34,64 +98,41 @@ def get_partitions_download_details(
     """
     if not file_name:
         return [
-            file for file in files_and_partitions_download_manifest
+            file for file in concurrent_download_manifest
             if type(file) is PartitionDownloadDetails
         ]
     return [
-        file for file in files_and_partitions_download_manifest
+        file for file in concurrent_download_manifest
         if type(file) is PartitionDownloadDetails and file.parent_file_name == file_name
     ]
 
 
-def get_partition_index(path_to_partition: pathlib.Path) -> int:
-    """Retrieves the partition index from a partition file name.
-
-    Parameters
-    ----------
-    path_to_partition: pathlib.Path
-        A pathlib.Path object containing the full path to the partition file.
-
-    Returns
-    -------
-    int
-        The partition index as an integer.
-
-    Notes
-    -----
-    Each partition file is named according to the format:
-    <FILE-TYPE>_<SOURCE-ID>_<DATE>_<PARTITION_INDEX>.txt
-    This standardised structure is used by the function to consistently retrieve the
-    index of a partition.
-    """
-    return int(path_to_partition.stem.split("_")[3])
-
-
-def get_list_of_downloaded_partitions(path_to_folder: pathlib.Path) -> List[Any]:
+def get_downloaded_partitions(path_to_folder: pathlib.Path) -> List[Any]:
     """Retrieves the full paths of the partitions file in a folder.
 
-    Parameters
-    ----------
-    path_to_folder: pathlib.Path
-        A pathlib.Path indicating the full path to the directory where we want to check
-        for partition files.
+        Parameters
+        ----------
+        path_to_folder: pathlib.Path
+            A pathlib.Path indicating the full path to the directory where we want to check
+            for partition files.
 
-    Returns
-    -------
-    List[Any]
-        If in the directory that is passed as an input are found partition files, the
-        function will return a list of pathlib.Path objects each containing the full
-        path to an individual partition file. If no partition file is found in the
-        directory, the function will return an empty list.
-    """
-    list_of_partition_files_in_folder = list(path_to_folder.glob("*.txt"))
-    if len(list_of_partition_files_in_folder) != 0:
-        list_of_partition_files_in_folder.sort(key=get_partition_index)
-    return list_of_partition_files_in_folder
+        Returns
+        -------
+        List[Any]
+            If in the directory that is passed as an input are found partition files, the
+            function will return a list of pathlib.Path objects each containing the full
+            path to an individual partition file. If no partition file is found in the
+            directory, the function will return an empty list.
+        """
+    downloaded_partitions = list(path_to_folder.glob("*.txt"))
+    if len(downloaded_partitions) != 0:
+        downloaded_partitions.sort(key=lambda x: int(x.stem.split("_")[3]))
+    return downloaded_partitions
 
 
-def get_list_of_missing_partitions(
+def get_file_specific_missing_partitions(
     file_specific_download_details: DownloadDetails,
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
+    concurrent_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
 ) -> List[Any]:
     """Compares the downloaded against the expected partitions and returns the missing partitions.
 
@@ -99,7 +140,7 @@ def get_list_of_missing_partitions(
     ----------
     file_specific_download_details: DownloadDetails
         A DownloadDetails named-tuple containing file-specific download information.
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
+    concurrent_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
         A list of DownloadDetails and PartitionDownloadDetails named-tuples.
 
     Returns
@@ -111,76 +152,84 @@ def get_list_of_missing_partitions(
         list.
     """
     expected_partitions = get_partitions_download_details(
-        files_and_partitions_download_manifest,
+        concurrent_download_manifest,
         file_name=file_specific_download_details.file_name,
     )
-
-    expected_partitions_paths = {
-        partition.file_path for partition in expected_partitions
-    }
-    downloaded_partitions_paths = set(
-        get_list_of_downloaded_partitions(
-            file_specific_download_details.file_path.parent,
-        ),
-    )
-
-    missing_partitions_paths = expected_partitions_paths.difference(
-        downloaded_partitions_paths,
-    )
-
     return [
         partition for partition in expected_partitions
-        if partition.file_path in missing_partitions_paths
+        if partition.file_path not in get_downloaded_partitions(
+            file_specific_download_details.file_path.parent,
+        )
     ]
 
 
-def get_all_missing_partitions_and_corresponding_file_references(
-    whole_files_download_manifest: List[DownloadDetails],
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
-) -> Tuple[List[Any], List[Any]]:
-    """Checks for missing partitions and return a list of them and their corresponding files.
+def get_all_missing_partitions(
+    whole_files_reference_data: List[DownloadDetails],
+    concurrent_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
+) -> List[PartitionDownloadDetails]:
+    """Returns all the missing partitions from a download session.
 
     Parameters
     ----------
-    whole_files_download_manifest: List[DownloadDetails]
+    whole_files_reference_data: List[DownloadDetails]
         A list of DownloadDetails named-tuples each containing file-specific download
         information.
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
+    concurrent_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
         A list of DownloadDetails and PartitionDownloadDetails named-tuples.
 
     Returns
     -------
-    Tuple[List[Any], List[Any]]
-    If the function detects any missing partition, it will return a tuple containing a
-    list of DownloadDetails named-tuple with the download information of all those files
-    that are missing some partitions, and a list of PartitionDownloadDetails containing
-    the download information of the missing partitions. If no missing partition is found,
-    the function will return a tuple of empty lists.
+    List[Any]
+        If the function detects any missing partition, it will return a tuple containing a
+        list of DownloadDetails named-tuple with the download information of all those files
+        that are missing some partitions, and a list of PartitionDownloadDetails containing
+        the download information of the missing partitions. If no missing partition is found,
+        the function will return a tuple of empty lists.
     """
-    list_of_all_partitions_download_details = get_partitions_download_details(
-        files_and_partitions_download_manifest,
-    )
-    all_missing_partitions = []
-    files_with_missing_partitions = []
-    for partitioned_file in filter_files_to_split(whole_files_download_manifest):
-        missing_partitions = get_list_of_missing_partitions(
-            partitioned_file, list_of_all_partitions_download_details,
-        )
-        if len(missing_partitions) > 0:
-            files_with_missing_partitions.append(partitioned_file)
-            all_missing_partitions += missing_partitions
-    return files_with_missing_partitions, all_missing_partitions
+    missing_partitions = [
+        get_file_specific_missing_partitions(file, concurrent_download_manifest)
+        for file in get_partitioned_files(whole_files_reference_data)
+        if len(get_file_specific_missing_partitions(file, concurrent_download_manifest)) > 0
+    ]
+    return list(itertools.chain.from_iterable(missing_partitions))
 
 
-def filter_files_ready_for_concatenation(
-    whole_files_download_manifest: List[DownloadDetails],
-    files_with_missing_partitions: List[DownloadDetails],
+def get_files_with_missing_partitions(
+    whole_files_reference_data: List[DownloadDetails],
+    missing_partitions: List[PartitionDownloadDetails],
 ) -> List[DownloadDetails]:
-    """Filters those files that are not missing any partition and thus are ready for concatenation.
+    """Returns all the files with missing partitions.
 
     Parameters
     ----------
-    whole_files_download_manifest: List[DownloadDetails]
+    whole_files_reference_data: List[DownloadDetails]
+        A list of DownloadDetails named-tuples each containing file-specific download
+        information.
+    missing_partitions: List[PartitionDownloadDetails]
+        A list of missing partition's PartitionDownloadDetails named-tuples.
+
+    Returns
+    -------
+    List[DownloadDetails]
+        If the function detects any missing partition, it will return a tuple containing a
+        list of DownloadDetails named-tuple with the download information of all those files
+        that are missing some partitions, and a list of PartitionDownloadDetails containing
+        the download information of the missing partitions. If no missing partition is found,
+        the function will return a tuple of empty lists.
+    """
+    unique_file_names = {partition.parent_file_name for partition in missing_partitions}
+    return [file for file in whole_files_reference_data if file.file_name in unique_file_names]
+
+
+def get_files_ready_for_concatenation(
+    whole_files_reference_data: List[DownloadDetails],
+    files_with_missing_partitions: List[DownloadDetails]
+) -> List[DownloadDetails]:
+    """Returns a list of files that are not missing any partition and are ready for concatenation.
+
+    Parameters
+    ----------
+    whole_files_reference_data: List[DownloadDetails]
         A list of DownloadDetails named-tuples each containing file-specific download
         information.
     files_with_missing_partitions: List[DownloadDetails]
@@ -196,18 +245,15 @@ def filter_files_ready_for_concatenation(
         download and that therefore are ready to have their partitions concatenated in
         a single file.
     """
-    partitioned_files = set(filter_files_to_split(whole_files_download_manifest))
-    files_missing_partitions = set(files_with_missing_partitions)
-    files_ready_for_concatenation = list(
-        partitioned_files.difference(files_missing_partitions),
+    return list(
+        set(get_partitioned_files(whole_files_reference_data)).difference(
+            files_with_missing_partitions,
+        )
     )
-    if len(files_ready_for_concatenation) != 0:
-        files_ready_for_concatenation.sort(key=lambda x: x.file_name)
-    return files_ready_for_concatenation
 
 
 def concatenate_partitions(path_to_output_file: pathlib.Path) -> str:
-    """Concatenates partition files.
+    """Concatenates .txt partition files into a single .txt.bz2 compressed file.
 
     Parameters
     ----------
@@ -220,16 +266,12 @@ def concatenate_partitions(path_to_output_file: pathlib.Path) -> str:
     str
         The full path of the output file as a string.
     """
-    available_partition_files = get_list_of_downloaded_partitions(
-        path_to_output_file.parent,
-    )
+    available_partition_files = get_downloaded_partitions(path_to_output_file.parent)
     with path_to_output_file.open("wb") as outfile:
         for file_path in available_partition_files:
             with file_path.open("rb") as file_source:
                 shutil.copyfileobj(file_source, outfile, length=(5 * 1024 * 1024))
             file_path.unlink()
-    #  for partition_file in available_partition_files:
-    #     partition_file.unlink()
     return path_to_output_file.as_posix()
 
 
@@ -249,9 +291,9 @@ def concatenate_each_file_partitions(
     return files_to_concatenate
 
 
-def filter_files_ready_for_integrity_test(
+def get_files_ready_for_integrity_test(
     files_with_missing_partitions: List[DownloadDetails],
-    whole_files_download_manifest: List[DownloadDetails],
+    whole_files_reference_data: List[DownloadDetails],
 ) -> List[DownloadDetails]:
     """Returns a list of those files that are ready for the data integrity checks.
 
@@ -265,7 +307,7 @@ def filter_files_ready_for_integrity_test(
     files_with_missing_partitions: List[DownloadDetails]
         A list of DownloadDetails named-tuples containing the information of those
         files that had missing partitions after the download was completed.
-    whole_files_download_manifest: List[DownloadDetails]
+    whole_files_reference_data: List[DownloadDetails]
         A list of DownloadDetails named-tuples containing the information of all the
         files to download.
 
@@ -275,62 +317,40 @@ def filter_files_ready_for_integrity_test(
         A list of DownloadDetails named-tuples containing the information of those files
         that are ready for the data integrity checks.
     """
-    all_files = set(whole_files_download_manifest)
-    files_with_missing_partitions = set(files_with_missing_partitions)
-    return list(all_files.difference(files_with_missing_partitions))
+    return list(set(whole_files_reference_data).difference(set(files_with_missing_partitions)))
+
+##########################################################################################
 
 
-def process_downloaded_files(
-    whole_files_download_manifest: List[DownloadDetails],
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]],
-) -> Tuple[List[Any], List[Any]]:
-    """Processes all the downloaded files.
-
-    Parameters
-    ----------
-    whole_files_download_manifest: List[DownloadDetails]
-        A list of DownloadDetails named-tuples each containing file-specific download
-        information.
-    files_and_partitions_download_manifest: List[Union[DownloadDetails, PartitionDownloadDetails]]
-        A list of DownloadDetails and PartitionDownloadDetails named-tuples.
-
-    Returns
-    -------
-    Tuple[List[DownloadDetails], List[Union[DownloadDetails, PartitionDownloadDetails]]]
-        If the function finds files with missing partitions or files that fails the
-        data integrity tests, it will return a tuple containing a list of DownloadDetails
-        named-tuples of all those files that needs to be downloaded again, and a list of
-        DownloadDetails and PartitionDownloadDetails containing the list of single-file
-        and partitions download information that needs to be downloaded again. If no
-        missing partitions are found and no file fails the data integrity test, the
-        function will return a tuple containing two empty lists.
-    """
-    whole_files_to_retry = []
-    whole_files_and_partitions_to_retry = []
-
-    (
-        files_with_missing_partitions,
-        missing_partitions) = get_all_missing_partitions_and_corresponding_file_references(
-        whole_files_download_manifest, files_and_partitions_download_manifest,
+def pre_concatenation_processing(download_manifest: ConcurrentDownloadManifest):
+    missing_partitions = get_all_missing_partitions(
+        whole_files_reference_data=download_manifest.whole_files_reference,
+        concurrent_download_manifest=download_manifest.concurrent_download_manifest,
+    )
+    files_with_missing_partitions = get_files_with_missing_partitions(
+        whole_files_reference_data=download_manifest.whole_files_reference,
+        missing_partitions=missing_partitions,
+    )
+    return ConcurrentDownloadManifest(
+        whole_files_reference=files_with_missing_partitions,
+        concurrent_download_manifest=missing_partitions,
     )
 
-    whole_files_to_retry += files_with_missing_partitions
-    whole_files_and_partitions_to_retry += missing_partitions
 
-    files_to_concatenate = filter_files_ready_for_concatenation(
-        whole_files_download_manifest, whole_files_to_retry,
+def concatenation_processing(
+    download_manifest: ConcurrentDownloadManifest,
+    failed_downloads_manifest: ConcurrentDownloadManifest,
+):
+    files_ready_for_concatenation = get_files_ready_for_concatenation(
+        whole_files_reference_data=download_manifest.whole_files_reference,
+        files_with_missing_partitions=failed_downloads_manifest.whole_files_reference,
     )
+    concatenate_each_file_partitions(files_ready_for_concatenation)
 
-    if len(files_to_concatenate) != 0:
-        files_ready_for_integrity_test = concatenate_each_file_partitions(files_to_concatenate)
-        failed_downloads = get_list_of_failed_downloads(files_ready_for_integrity_test)
-        for file in failed_downloads:
-            whole_files_to_retry.append(file)
-            if file.is_partitioned is False:
-                whole_files_and_partitions_to_retry.append(file)
-            else:
-                whole_files_and_partitions_to_retry += get_partitions_download_details(
-                    files_and_partitions_download_manifest, file.file_name,
-                )
 
-    return whole_files_to_retry, whole_files_and_partitions_to_retry
+def update_failed_download_manifest(
+    failed_download_manifest: ConcurrentDownloadManifest,
+    failed_files: List[DownloadDetails],
+    failed_partitions: List[PartitionDownloadDetails],
+):
+    pass
