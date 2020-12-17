@@ -472,6 +472,105 @@ class TestGetAllMissingPartitions:
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
 
+    def test_scenario_of_one_file_only_with_missing_partitions(
+        self,
+        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_download_details_multiple_sources_single_day
+    ):
+        # Setup
+        base_path = pathlib.Path(__file__).resolve().parent.joinpath(
+            "Data", "2020", "07", "21",
+        )
+        downloaded_instruments_directories = [
+            base_path / 'S207' / 'CROSS',
+            base_path / 'S207' / 'WATCHLIST',
+            base_path / 'S367' / 'WATCHLIST',
+            ]
+        for directory in downloaded_instruments_directories:
+            directory.mkdir(parents=True, exist_ok=True)
+
+        list_of_downloaded_partitions = [
+            base_path / 'S207' / 'CROSS' / 'CROSSREF_207_20200721_1.txt',
+            base_path / 'S207' / 'CROSS' / 'CROSSREF_207_20200721_2.txt',
+            base_path / 'S207' / 'CROSS' / 'CROSSREF_207_20200721_3.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_1.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_2.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_3.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_4.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_5.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_6.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_7.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_8.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_9.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_10.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_11.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_12.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_13.txt',
+            base_path / 'S207' / 'WATCHLIST' / 'WATCHLIST_207_20200721_14.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_1.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_2.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_3.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_4.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_5.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_6.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_7.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_8.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_9.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_10.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_11.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_12.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_13.txt',
+            base_path / 'S367' / 'WATCHLIST' / 'WATCHLIST_367_20200721_14.txt',
+            ]
+
+        for partition_path in list_of_downloaded_partitions:
+            partition_path.touch()
+
+        # Exercise
+        missing_partitions = pdp.get_all_missing_partitions(
+                mocked_download_details_multiple_sources_single_day,
+                mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+            )
+        # Verify
+        expected_missing_partitions = [
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_367_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/'
+                    'S367/WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
+                    '?start=73400321&end=78643200'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'WATCHLIST_367_20200721_15.txt',
+                ),
+                partition_index=15,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_367_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/'
+                    'S367/WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
+                    '?start=78643201&end=82451354'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'WATCHLIST_367_20200721_16.txt',
+                ),
+                partition_index=16,
+            )
+        ]
+        assert missing_partitions == expected_missing_partitions
+        # Cleanup
+        # First, remove all the created files
+        for file in list(base_path.glob('**/*.txt')):
+            file.unlink()
+        # Then remove all the created folders iteratively:
+        directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
+
+
     def test_scenario_of_no_missing_partitions(
         self,
         mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
