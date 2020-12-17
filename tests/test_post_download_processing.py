@@ -156,3 +156,45 @@ class TestGetPartitionsDownloadDetails:
         ]
         assert computed_list_of_name_specific_partitions == expected_names_of_specific_partitions
         # Cleanup - none
+
+
+class TestGetListOfDownloadedPartitions:
+    def test_retrieval_of_downloaded_partitions(self, simulated_downloaded_partitions):
+        # Setup
+        # Exercise
+        computed_list_of_downloaded_partitions = pdp.get_downloaded_partitions(
+            simulated_downloaded_partitions,
+        )
+        # Verify
+        path_to_tmp_dir = simulated_downloaded_partitions
+        expected_list_of_downloaded_partitions = [
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_1.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_2.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_3.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_4.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_5.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_6.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_7.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_8.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_9.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_10.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_11.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_12.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_13.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_14.txt',
+            path_to_tmp_dir / 'WATCHLIST_367_20200721_15.txt']
+        assert computed_list_of_downloaded_partitions == expected_list_of_downloaded_partitions
+        # Cleanup - none
+
+    def test_empty_directory_scenario(self):
+        # Setup
+        directory = pathlib.Path(__file__).resolve().parent.joinpath(
+            "static_data", "Temp"
+        )
+        directory.mkdir(exist_ok=True)
+        # Exercise
+        downloaded_partitions = pdp.get_downloaded_partitions(directory)
+        # Verify
+        assert downloaded_partitions == []
+        # Cleanup
+        directory.rmdir()
