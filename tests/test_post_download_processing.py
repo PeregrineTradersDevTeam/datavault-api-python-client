@@ -896,3 +896,119 @@ class TestConcatenatePartitions:
         directory_root = pathlib.Path(__file__).resolve().parent / 'Temp'
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
+
+
+class TestConcatenateEachFilePartitions:
+    def test_concatenation_of_all_partitions(self):
+        # Setup
+        base_path = pathlib.Path(__file__).resolve().parent.joinpath(
+            'Data', '2020', '07', '21', 'S207',
+        )
+        base_path.mkdir(parents=True, exist_ok=True)
+        files_to_concatenate = [
+            DownloadDetails(
+                file_name='CROSSREF_207_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/'
+                    'CROSS/20200721-S207_CROSS_ALL_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S207', 'CROSS',
+                    'CROSSREF_207_20200721.txt.bz2',
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=14690557,
+                md5sum='f2683cd87a7b29f3b8776373d56a8456',
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name='WATCHLIST_207_20200721.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/'
+                    'WATCHLIST/20200721-S207_WATCHLIST_username_0_0'
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    'Data', '2020', '07', '21', 'S207', 'WATCHLIST',
+                    'WATCHLIST_207_20200721.txt.bz2',
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=72293374,
+                md5sum='36e444a8362e7db52af50ee0f8dc0d2e',
+                is_partitioned=True,
+            )
+        ]
+        partitions = {
+            'CROSSREF_207_20200721.txt.bz2': [
+                'CROSSREF_207_20200721_1.txt',
+                'CROSSREF_207_20200721_2.txt',
+                'CROSSREF_207_20200721_3.txt',
+            ],
+            'WATCHLIST_207_20200721.txt.bz2': [
+                'WATCHLIST_207_20200721_1.txt',
+                'WATCHLIST_207_20200721_2.txt',
+                'WATCHLIST_207_20200721_3.txt',
+                'WATCHLIST_207_20200721_4.txt',
+                'WATCHLIST_207_20200721_5.txt',
+                'WATCHLIST_207_20200721_6.txt',
+                'WATCHLIST_207_20200721_7.txt',
+                'WATCHLIST_207_20200721_8.txt',
+                'WATCHLIST_207_20200721_9.txt',
+                'WATCHLIST_207_20200721_10.txt',
+                'WATCHLIST_207_20200721_11.txt',
+                'WATCHLIST_207_20200721_12.txt',
+                'WATCHLIST_207_20200721_13.txt',
+                'WATCHLIST_207_20200721_14.txt',
+            ],
+        }
+
+        crossref_concatenated_content = b''
+        path_to_crossref_files_directory = base_path / 'CROSS'
+        path_to_crossref_files_directory.mkdir(parents=True, exist_ok=True)
+        for crossref_partition in partitions['CROSSREF_207_20200721.txt.bz2']:
+            fpath = base_path / 'CROSS' / crossref_partition
+            with fpath.open('wb') as outfile:
+                random_byte_content = os.urandom(500)
+                crossref_concatenated_content += random_byte_content
+                outfile.write(random_byte_content)
+
+        watchlist_concatenated_content = b''
+        path_to_watchlist_files_directory = base_path / 'WATCHLIST'
+        path_to_watchlist_files_directory.mkdir(parents=True, exist_ok=True)
+        for watchlist_partition in partitions['WATCHLIST_207_20200721.txt.bz2']:
+            fpath = base_path / 'WATCHLIST' / watchlist_partition
+            with fpath.open('wb') as outfile:
+                random_byte_content = os.urandom(500)
+                watchlist_concatenated_content += random_byte_content
+                outfile.write(random_byte_content)
+
+        # Exercise
+        files_to_test = pdp.concatenate_each_file_partitions(files_to_concatenate)
+        # Verify
+        path_to_crossref_file = pathlib.Path(__file__).resolve().parent.joinpath(
+            'Data', '2020', '07', '21', 'S207', 'CROSS', 'CROSSREF_207_20200721.txt.bz2',
+        )
+        with path_to_crossref_file.open('rb') as infile:
+            crossref_file_content = infile.read()
+
+        assert crossref_file_content == crossref_concatenated_content
+
+        path_to_watchlist_file = pathlib.Path(__file__).resolve().parent.joinpath(
+            'Data', '2020', '07', '21', 'S207', 'WATCHLIST',
+            'WATCHLIST_207_20200721.txt.bz2',
+        )
+        with path_to_watchlist_file.open('rb') as infile:
+            watchlist_file_content = infile.read()
+
+        assert watchlist_file_content == watchlist_concatenated_content
+
+        assert files_to_test == files_to_concatenate
+        # Cleanup
+        # First, remove all the created files
+        for file in list(base_path.glob('**/*.bz2')):
+            file.unlink()
+        # Then remove all the created folders iteratively:
+        directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
+        for directory in list(directory_root.glob('**/'))[::-1]:
+            directory.rmdir()
