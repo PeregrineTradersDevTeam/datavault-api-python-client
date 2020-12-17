@@ -1082,7 +1082,7 @@ class TestGeneratePathToFilePartition:
         # Cleanup - none
 
 
-class TestCreateListOfFilePartitionsDownloadInfo:
+class TestCreateListOfFileSpecificPartitionsDownloadInfo:
     def test_generation_list_of_partitions_download_info(
         self,
         mocked_download_details_single_instrument,
