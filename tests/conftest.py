@@ -5,6 +5,7 @@ import pytest
 import responses
 
 from datavault_api_client.data_structures import (
+    ConcurrentDownloadManifest,
     DiscoveredFileInfo,
     DownloadDetails,
     PartitionDownloadDetails,
@@ -471,7 +472,8 @@ def mocked_list_of_file_partitions_single_instrument():
             ),
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_1.txt"
-            )
+            ),
+            partition_index=1,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -482,6 +484,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_2.txt"
             ),
+            partition_index=2,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -492,6 +495,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_3.txt"
             ),
+            partition_index=3,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -502,6 +506,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_4.txt"
             ),
+            partition_index=4,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -512,6 +517,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_5.txt"
             ),
+            partition_index=5,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -522,6 +528,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_6.txt"
             ),
+            partition_index=6,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -532,6 +539,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_7.txt"
             ),
+            partition_index=7,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -542,6 +550,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_8.txt"
             ),
+            partition_index=8,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -551,7 +560,8 @@ def mocked_list_of_file_partitions_single_instrument():
             ),
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_9.txt"
-            )
+            ),
+            partition_index=9,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -562,6 +572,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_10.txt"
             ),
+            partition_index=10,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -572,6 +583,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_11.txt"
             ),
+            partition_index=11,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -582,6 +594,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_12.txt"
             ),
+            partition_index=12,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -592,6 +605,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_13.txt"
             ),
+            partition_index=13,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -602,6 +616,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_14.txt"
             ),
+            partition_index=14,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -612,6 +627,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_15.txt"
             ),
+            partition_index=15,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -622,6 +638,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_16.txt"
             ),
+            partition_index=16,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -632,6 +649,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_17.txt"
             ),
+            partition_index=17,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -642,6 +660,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_18.txt"
             ),
+            partition_index=18,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -652,6 +671,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_19.txt"
             ),
+            partition_index=19,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -662,6 +682,7 @@ def mocked_list_of_file_partitions_single_instrument():
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/16/S367/WATCHLIST", "WATCHLIST_367_20200716_20.txt"
             ),
+            partition_index=20,
         ),
     ]
     return list_of_file_partitions
@@ -1097,6 +1118,58 @@ def mocked_list_of_whole_files_download_details_single_source_single_day():
 
 
 @pytest.fixture
+def mocked_whole_files_download_details_single_source_single_day_synchronous_case():
+    list_of_download_details = [
+        DownloadDetails(
+            file_name="COREREF_945_20200722.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CORE/"
+                "20200722-S945_CORE_ALL_0_0"
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                "Data/2020/07/22/S945/CORE", "COREREF_945_20200722.txt.bz2"
+            ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
+            size=17734,
+            md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name="CROSSREF_945_20200722.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CROSS/"
+                "20200722-S945_CROSS_ALL_0_0"
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                "Data/2020/07/22/S945/CROSS", "CROSSREF_945_20200722.txt.bz2"
+            ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
+            size=32822,
+            md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name="WATCHLIST_945_20200722.txt.bz2",
+            download_url=(
+                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/WATCHLIST/"
+                "20200722-S945_WATCHLIST_username_0_0"
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722.txt.bz2"
+            ),
+            source_id=945,
+            reference_date=datetime.datetime(year=2020, month=7, day=22),
+            size=61663360,
+            md5sum="78571e930fb12fcfb2fb70feb07c7bcf",
+            is_partitioned=None,
+        ),
+    ]
+    return list_of_download_details
+
+
+@pytest.fixture
 def mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day():
     list_of_not_partitioned_files_download_details = [
         DownloadDetails(
@@ -1140,6 +1213,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_1.txt"
             ),
+            partition_index=1,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1150,6 +1224,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_2.txt"
             ),
+            partition_index=2,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1160,6 +1235,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_3.txt"
             ),
+            partition_index=3,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1170,6 +1246,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_4.txt"
             ),
+            partition_index=4,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1180,6 +1257,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_5.txt"
             ),
+            partition_index=5,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1190,6 +1268,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_6.txt"
             ),
+            partition_index=6,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1200,6 +1279,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_7.txt"
             ),
+            partition_index=7,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1210,6 +1290,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_8.txt"
             ),
+            partition_index=8,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1220,6 +1301,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_9.txt"
             ),
+            partition_index=9,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1230,6 +1312,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_10.txt"
             ),
+            partition_index=10,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1240,6 +1323,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_11.txt"
             ),
+            partition_index=11,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
@@ -1250,6 +1334,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722_12.txt"
             ),
+            partition_index=12,
         ),
     ]
     list_of_whole_files_and_partitions_download_details = (
@@ -1898,6 +1983,190 @@ def mocked_set_of_files_available_to_download_single_source_multiple_days():
             size=70613654,
             md5sum="ba2c00511520a3cf4b5383ceedb3b41d",
         ),
+    ]
+    return set_of_files_available_to_download
+
+
+@pytest.fixture
+def mocked_download_info_single_source_multiple_days_synchronous():
+    set_of_files_available_to_download = [
+        DownloadDetails(
+            file_name='COREREF_207_20200717.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CORE/'
+                '20200717-S207_CORE_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/', '2020/07/17/S207/CORE/COREREF_207_20200717.txt.bz2'
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 17, 0, 0),
+            size=3910430,
+            md5sum='63958e5bc651b95da410e76a1763dde7',
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name='CROSSREF_207_20200717.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/'
+                'CROSS/20200717-S207_CROSS_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/', '2020/07/17/S207/CROSS/CROSSREF_207_20200717.txt.bz2'
+            ),
+            source_id=207, reference_date=datetime.datetime(2020, 7, 17, 0, 0),
+            size=13816558, md5sum='d1316740714e9b13cf03acf02a23c596',
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name='WATCHLIST_207_20200717.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/WATCHLIST/'
+                '20200717-S207_WATCHLIST_username_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/', '2020/07/17/S207/WATCHLIST/WATCHLIST_207_20200717.txt.bz2'
+            ),
+            source_id=207, reference_date=datetime.datetime(2020, 7, 17, 0, 0),
+            size=63958346, md5sum='9be9099186dfd8a7e0012e58fd49a3da',
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name='COREREF_207_20200720.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CORE/'
+                '20200720-S207_CORE_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/', '2020/07/20/S207/CORE/COREREF_207_20200720.txt.bz2'
+            ),
+            source_id=207, reference_date=datetime.datetime(2020, 7, 20, 0, 0),
+            size=4548016, md5sum='a46a5f07b6a402d4023ef550df6a12e4',
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name='CROSSREF_207_20200720.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CROSS/'
+                '20200720-S207_CROSS_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/', '2020/07/20/S207/CROSS/CROSSREF_207_20200720.txt.bz2'
+            ),
+            source_id=207, reference_date=datetime.datetime(2020, 7, 20, 0, 0),
+            size=14571417, md5sum='6b3dbd152e7dccf4147f62b6ce1c78c3',
+            is_partitioned=None,
+        ),
+        DownloadDetails(
+            file_name='WATCHLIST_207_20200720.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/WATCHLIST/'
+                '20200720-S207_WATCHLIST_username_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/', '2020/07/20/S207/WATCHLIST/WATCHLIST_207_20200720.txt.bz2'
+            ),
+            source_id=207, reference_date=datetime.datetime(2020, 7, 20, 0, 0),
+            size=70613654, md5sum='ba2c00511520a3cf4b5383ceedb3b41d',
+            is_partitioned=None,
+        ),
+    ]
+    return set_of_files_available_to_download
+
+
+@pytest.fixture
+def mocked_download_info_single_source_multiple_days_concurrent():
+    set_of_files_available_to_download = [
+        DownloadDetails(
+            file_name='COREREF_207_20200717.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CORE/'
+                '20200717-S207_CORE_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/2020/07/17/S207/CORE/COREREF_207_20200717.txt.bz2',
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 17, 0, 0),
+            size=3910430,
+            md5sum='63958e5bc651b95da410e76a1763dde7',
+            is_partitioned=False,
+        ),
+        DownloadDetails(
+            file_name='CROSSREF_207_20200717.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/CROSS/'
+                '20200717-S207_CROSS_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/2020/07/17/S207/CROSS/CROSSREF_207_20200717.txt.bz2',
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 17, 0, 0),
+            size=13816558,
+            md5sum='d1316740714e9b13cf03acf02a23c596',
+            is_partitioned=False,
+        ),
+        DownloadDetails(
+            file_name='WATCHLIST_207_20200717.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/17/S207/WATCHLIST/'
+                '20200717-S207_WATCHLIST_username_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/2020/07/17/S207/WATCHLIST/WATCHLIST_207_20200717.txt.bz2',
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 17, 0, 0),
+            size=63958346,
+            md5sum='9be9099186dfd8a7e0012e58fd49a3da',
+            is_partitioned=True,
+        ),
+        DownloadDetails(
+            file_name='COREREF_207_20200720.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CORE/'
+                '20200720-S207_CORE_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/2020/07/20/S207/CORE/COREREF_207_20200720.txt.bz2',
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 20, 0, 0),
+            size=4548016,
+            md5sum='a46a5f07b6a402d4023ef550df6a12e4',
+            is_partitioned=False,
+        ),
+        DownloadDetails(
+            file_name='CROSSREF_207_20200720.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/CROSS/'
+                '20200720-S207_CROSS_ALL_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/2020/07/20/S207/CROSS/CROSSREF_207_20200720.txt.bz2',
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 20, 0, 0),
+            size=14571417,
+            md5sum='6b3dbd152e7dccf4147f62b6ce1c78c3',
+            is_partitioned=False,
+        ),
+        DownloadDetails(
+            file_name='WATCHLIST_207_20200720.txt.bz2',
+            download_url=(
+                'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/WATCHLIST/'
+                '20200720-S207_WATCHLIST_username_0_0'
+            ),
+            file_path=Path(__file__).resolve().parent.joinpath(
+                'Temp/Data/2020/07/20/S207/WATCHLIST/WATCHLIST_207_20200720.txt.bz2'
+            ),
+            source_id=207,
+            reference_date=datetime.datetime(2020, 7, 20, 0, 0),
+            size=70613654,
+            md5sum='ba2c00511520a3cf4b5383ceedb3b41d',
+            is_partitioned=True,
+        )
     ]
     return set_of_files_available_to_download
 
@@ -2609,6 +2878,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/CROSS", "CROSSREF_207_20200721_1.txt"
             ),
+            partition_index=1,
         ),
         PartitionDownloadDetails(
             parent_file_name="CROSSREF_207_20200721.txt.bz2",
@@ -2619,6 +2889,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/CROSS", "CROSSREF_207_20200721_2.txt"
             ),
+            partition_index=2,
         ),
         PartitionDownloadDetails(
             parent_file_name="CROSSREF_207_20200721.txt.bz2",
@@ -2629,6 +2900,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/CROSS", "CROSSREF_207_20200721_3.txt"
             ),
+            partition_index=3,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2639,6 +2911,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_1.txt"
             ),
+            partition_index=1,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2649,6 +2922,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_2.txt"
             ),
+            partition_index=2,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2659,6 +2933,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_3.txt"
             ),
+            partition_index=3,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2669,6 +2944,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_4.txt"
             ),
+            partition_index=4,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2679,6 +2955,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_5.txt"
             ),
+            partition_index=5,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2689,6 +2966,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_6.txt"
             ),
+            partition_index=6,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2699,6 +2977,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_7.txt"
             ),
+            partition_index=7,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2709,6 +2988,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_8.txt"
             ),
+            partition_index=8,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2719,6 +2999,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_9.txt"
             ),
+            partition_index=9,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2729,6 +3010,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_10.txt"
             ),
+            partition_index=10,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2739,6 +3021,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_11.txt"
             ),
+            partition_index=11,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2749,6 +3032,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_12.txt"
             ),
+            partition_index=12,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2759,6 +3043,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_13.txt"
             ),
+            partition_index=13,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_207_20200721.txt.bz2",
@@ -2769,6 +3054,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721_14.txt"
             ),
+            partition_index=14,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2779,6 +3065,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_1.txt"
             ),
+            partition_index=1,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2789,6 +3076,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_2.txt"
             ),
+            partition_index=2,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2798,7 +3086,8 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             ),
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_3.txt"
-            )
+            ),
+            partition_index=3,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2809,6 +3098,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_4.txt"
             ),
+            partition_index=4,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2819,6 +3109,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_5.txt"
             ),
+            partition_index=5,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2829,6 +3120,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_6.txt"
             ),
+            partition_index=6,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2839,6 +3131,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_7.txt"
             ),
+            partition_index=7,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2849,6 +3142,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_8.txt"
             ),
+            partition_index=8,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2859,6 +3153,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_9.txt"
             ),
+            partition_index=9,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2869,6 +3164,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_10.txt"
             ),
+            partition_index=10,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2879,6 +3175,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_11.txt"
             ),
+            partition_index=11,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2889,6 +3186,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_12.txt"
             ),
+            partition_index=12,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2899,6 +3197,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_13.txt"
             ),
+            partition_index=13,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2909,6 +3208,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_14.txt"
             ),
+            partition_index=14,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2919,6 +3219,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_15.txt"
             ),
+            partition_index=15,
         ),
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200721.txt.bz2",
@@ -2929,6 +3230,7 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             file_path=Path(__file__).resolve().parent.joinpath(
                 "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721_16.txt"
             ),
+            partition_index=16,
         ),
     ]
     list_of_non_partitioned_files_download_detail = [
@@ -3013,3 +3315,259 @@ def simulated_downloaded_partitions(tmp_path_factory):
         f_path = path_to_tmp_dir / name
         f_path.touch()
     return path_to_tmp_dir
+
+
+@pytest.fixture()
+def mocked_concurrent_download_manifest():
+    download_manifest = ConcurrentDownloadManifest(
+        files_reference_data=[
+            DownloadDetails(
+                file_name="COREREF_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                    "20201218-S945_CORE_ALL_0_0"
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=24326963,
+                md5sum="8fc8fa1402e23f2d552899525b808514",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="CROSSREF_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CROSS/"
+                    "20201218-S945_CROSS_ALL_0_0"
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=35150,
+                md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                is_partitioned=False,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/WATCHLIST"
+                    "/20201218-S945_WATCHLIST_username_0_0"
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=51648457,
+                md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                is_partitioned=True,
+            ),
+        ],
+        whole_files_to_download=[
+            DownloadDetails(
+                file_name='CROSSREF_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CROSS/'
+                    '20201218-S945_CROSS_ALL_0_0'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/CROSS/"
+                    "CROSSREF_945_20201218.txt.bz2"
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(2020, 12, 18, 0, 0),
+                size=35150,
+                md5sum='13da7cea9a7337cd71fd9aea4f909bc6',
+                is_partitioned=False
+            ),
+        ],
+        partitions_to_download=[
+            PartitionDownloadDetails(
+                parent_file_name='COREREF_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                    '20201218-S945_CORE_ALL_0_0?start=0&end=5242880'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                    "COREREF_945_20201218_1.txt"
+                ),
+                partition_index=1,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='COREREF_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                    '20201218-S945_CORE_ALL_0_0?start=5242881&end=10485760'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                    "COREREF_945_20201218_2.txt"
+                ),
+                partition_index=2,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='COREREF_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                    '20201218-S945_CORE_ALL_0_0?start=10485761&end=15728640'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                    "COREREF_945_20201218_3.txt"
+                ),
+                partition_index=3,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='COREREF_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                    '20201218-S945_CORE_ALL_0_0?start=15728641&end=20971520'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                    "COREREF_945_20201218_4.txt"
+                ),
+                partition_index=4,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='COREREF_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                    '20201218-S945_CORE_ALL_0_0?start=20971521&end=24326963'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                    "COREREF_945_20201218_5.txt"
+                ),
+                partition_index=5,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=0&end=5242880'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_1.txt"
+                ),
+                partition_index=1,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=5242881&end=10485760'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_2.txt"),
+                partition_index=2,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=10485761&end=15728640'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_3.txt"
+                ),
+                partition_index=3,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=15728641&end=20971520'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_4.txt"
+                ),
+                partition_index=4,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=20971521&end=26214400'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_5.txt"
+                ),
+                partition_index=5,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=26214401&end=31457280'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_6.txt"
+                ),
+                partition_index=6,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=31457281&end=36700160'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_7.txt"
+                ),
+                partition_index=7,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=36700161&end=41943040'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_8.txt"
+                ),
+                partition_index=8,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=41943041&end=47185920'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_9.txt"
+                ),
+                partition_index=9,
+            ),
+            PartitionDownloadDetails(
+                parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                download_url=(
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                    'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=47185921&end=51648457'
+                ),
+                file_path=Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                    "WATCHLIST_945_20201218_10.txt"
+                ),
+                partition_index=10,
+            ),
+        ]
+    )
+    return download_manifest
