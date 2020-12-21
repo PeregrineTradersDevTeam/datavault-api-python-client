@@ -424,7 +424,7 @@ def mocked_datavault_api_instrument_level(mocked_response):
 
 
 @pytest.fixture
-def mocked_set_of_files_available_to_download_single_instrument():
+def mocked_files_available_to_download_single_instrument():
     files_available_to_download = [
         DiscoveredFileInfo(
             file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -462,7 +462,7 @@ def mocked_download_details_single_instrument():
 
 
 @pytest.fixture
-def mocked_list_of_file_partitions_single_instrument():
+def mocked_file_partitions_single_instrument():
     list_of_file_partitions = [
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_367_20200716.txt.bz2",
@@ -1026,7 +1026,7 @@ def mocked_datavault_api_single_source_single_day(mocked_response):
 
 
 @pytest.fixture
-def mocked_set_of_files_available_to_download_single_source_single_day():
+def mocked_files_available_to_download_single_source_single_day():
     set_of_files_available_to_download = [
         DiscoveredFileInfo(
             file_name="COREREF_945_20200722.txt.bz2",
@@ -1066,7 +1066,7 @@ def mocked_set_of_files_available_to_download_single_source_single_day():
 
 
 @pytest.fixture
-def mocked_list_of_whole_files_download_details_single_source_single_day():
+def mocked_whole_files_download_details_single_source_single_day():
     list_of_download_details = [
         DownloadDetails(
             file_name="COREREF_945_20200722.txt.bz2",
@@ -1170,40 +1170,8 @@ def mocked_whole_files_download_details_single_source_single_day_synchronous_cas
 
 
 @pytest.fixture
-def mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day():
-    list_of_not_partitioned_files_download_details = [
-        DownloadDetails(
-            file_name="COREREF_945_20200722.txt.bz2",
-            download_url=(
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CORE/"
-                "20200722-S945_CORE_ALL_0_0"
-            ),
-            file_path=Path(__file__).resolve().parent.joinpath(
-                "Data/2020/07/22/S945/CORE", "COREREF_945_20200722.txt.bz2"
-            ),
-            source_id=945,
-            reference_date=datetime.datetime(year=2020, month=7, day=22),
-            size=17734,
-            md5sum="3548e03c8833b0e2133c80ac3b1dcdac",
-            is_partitioned=False,
-        ),
-        DownloadDetails(
-            file_name="CROSSREF_945_20200722.txt.bz2",
-            download_url=(
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/CROSS/"
-                "20200722-S945_CROSS_ALL_0_0"
-            ),
-            file_path=Path(__file__).resolve().parent.joinpath(
-                "Data/2020/07/22/S945/CROSS", "CROSSREF_945_20200722.txt.bz2"
-            ),
-            source_id=945,
-            reference_date=datetime.datetime(year=2020, month=7, day=22),
-            size=32822,
-            md5sum="936c0515dcbc27d2e2fc3ebdcf5f883a",
-            is_partitioned=False,
-        ),
-    ]
-    list_of_partitions_download_details = [
+def mocked_partitions_download_details_single_source_single_day():
+    return [
         PartitionDownloadDetails(
             parent_file_name="WATCHLIST_945_20200722.txt.bz2",
             download_url=(
@@ -1337,12 +1305,6 @@ def mocked_list_of_whole_files_and_partitions_download_details_single_source_sin
             partition_index=12,
         ),
     ]
-    list_of_whole_files_and_partitions_download_details = (
-        list_of_not_partitioned_files_download_details
-        + list_of_partitions_download_details
-    )
-
-    return list_of_whole_files_and_partitions_download_details
 
 
 """"Datavault API with single source and multiple days."""
@@ -1915,7 +1877,7 @@ def mocked_datavault_api_single_source_multiple_days(mocked_response):
 
 
 @pytest.fixture
-def mocked_set_of_files_available_to_download_single_source_multiple_days():
+def mocked_files_available_to_download_single_source_multiple_days():
     set_of_files_available_to_download = [
         DiscoveredFileInfo(
             file_name="COREREF_207_20200717.txt.bz2",
@@ -2697,7 +2659,7 @@ def mocked_datavault_api_multiple_sources_single_day(mocked_response):
 
 
 @pytest.fixture
-def mocked_set_of_files_available_to_download_multiple_sources_single_day():
+def mocked_files_available_to_download_multiple_sources_single_day():
     set_of_files_available_to_download = [
         DiscoveredFileInfo(
             file_name="COREREF_207_20200721.txt.bz2",
@@ -2867,8 +2829,8 @@ def mocked_download_details_multiple_sources_single_day():
 
 
 @pytest.fixture
-def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day():
-    list_of_partitions_download_details = [
+def mocked_partitions_download_details_multiple_sources_single_day():
+    return [
         PartitionDownloadDetails(
             parent_file_name="CROSSREF_207_20200721.txt.bz2",
             download_url=(
@@ -3233,59 +3195,6 @@ def mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_
             partition_index=16,
         ),
     ]
-    list_of_non_partitioned_files_download_detail = [
-        DownloadDetails(
-            file_name="COREREF_207_20200721.txt.bz2",
-            download_url=(
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/CORE/"
-                "20200721-S207_CORE_ALL_0_0"
-            ),
-            file_path=Path(__file__).resolve().parent.joinpath(
-                "Data/2020/07/21/S367/CORE", "COREREF_207_20200721.txt.bz2"
-            ),
-            source_id=207,
-            reference_date=datetime.datetime(year=2020, month=7, day=21),
-            size=4590454,
-            md5sum="c1a079841f84676e91b5021afd3f5272",
-            is_partitioned=False,
-        ),
-        DownloadDetails(
-            file_name="COREREF_367_20200721.txt.bz2",
-            download_url=(
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/CORE/"
-                "20200721-S367_CORE_ALL_0_0"
-            ),
-            file_path=Path(__file__).resolve().parent.joinpath(
-                "Data/2020/07/21/S367/CORE", "COREREF_367_20200721.txt.bz2"
-            ),
-            source_id=367,
-            reference_date=datetime.datetime(year=2020, month=7, day=21),
-            size=706586,
-            md5sum="e28385e918aa71720235232c9a895b64",
-            is_partitioned=False,
-        ),
-        DownloadDetails(
-            file_name="CROSSREF_367_20200721.txt.bz2",
-            download_url=(
-                "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/CROSS/"
-                "20200721-S367_CROSS_ALL_0_0"
-            ),
-            file_path=Path(__file__).resolve().parent.joinpath(
-                "Data/2020/07/21/S367/CROSS", "CROSSREF_367_20200721.txt.bz2"
-            ),
-            source_id=367,
-            reference_date=datetime.datetime(year=2020, month=7, day=21),
-            size=879897,
-            md5sum="fdb7592c8806a28f59c4d4da1e934c43",
-            is_partitioned=False,
-        ),
-    ]
-    list_of_whole_files_and_partition_download_details = (
-        list_of_non_partitioned_files_download_detail
-        + list_of_partitions_download_details
-    )
-
-    return list_of_whole_files_and_partition_download_details
 
 
 """Others."""
