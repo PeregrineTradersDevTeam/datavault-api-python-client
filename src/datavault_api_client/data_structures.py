@@ -1,7 +1,7 @@
 """Collects the data structures used across the datavault_api_client library."""
 import datetime
 import pathlib
-from typing import List, NamedTuple, Optional, TypedDict, Union
+from typing import List, NamedTuple, Optional, TypedDict
 
 
 class DiscoveredFileInfo(NamedTuple):
@@ -60,6 +60,7 @@ class ItemToDownload(TypedDict):
     a JSON object that is saved to file so to store a record of each file downloaded
     on a specific data that can be used later as a source of truth.
     """
+
     file_name: str
     download_url: str
     file_path: str
@@ -101,6 +102,7 @@ class ConcurrentDownloadManifest(NamedTuple):
     each corresponding to a specific file partition and carrying the information to
     download that unique partition.
     """
+
     files_reference_data: List[DownloadDetails]
     whole_files_to_download: List[DownloadDetails]
     partitions_to_download: List[PartitionDownloadDetails]
