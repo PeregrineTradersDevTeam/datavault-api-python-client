@@ -5,11 +5,11 @@ DiscoveredFileInfo named tuples that is produced by the crawler, and prepare the
 manifest that is used by the downloading functions as a reference.
 """
 import datetime
+import itertools
 import json
 import pathlib
 from typing import Dict, List, Optional
 import urllib.parse
-import itertools
 
 from datavault_api_client.data_structures import (
     ConcurrentDownloadManifest,
@@ -122,7 +122,6 @@ def process_raw_download_info(
     raw_download_info: DiscoveredFileInfo,
     path_to_data_folder: str,
     partition_size_in_mib: Optional[float] = None,
-    synchronous: bool = False,
 ) -> DownloadDetails:
     """Process the raw download information contained in a DiscoveredFileInfo named-tuple.
 
@@ -144,11 +143,6 @@ def process_raw_download_info(
         The full path to the directory where the file will be downloaded.
     partition_size_in_mib: float
         The partition size in MiB.
-    synchronous: bool
-        A boolean flag, if set equal to True, it sets the is_partitioned field from the
-        ItemToDownload named tuple to None as the field is not used in synchronous downloads. By
-        default is set equal to False, assuming that the default download method is a
-        concurrent download, where the is_partitioned flag is used.
 
     Returns
     -------
@@ -157,7 +151,7 @@ def process_raw_download_info(
         path where the file will be downloaded, the file size, the md5sum digest, and a
         flag that informs whether the file is eligible to be split in multiple partitions.
     """
-    if synchronous:
+    if not partition_size_in_mib:
         return DownloadDetails(
             file_name=raw_download_info.file_name,
             download_url=raw_download_info.download_url,
@@ -192,7 +186,6 @@ def process_all_discovered_files_info(
     discovered_files_info: List[DiscoveredFileInfo],
     path_to_data_directory: str,
     partition_size_in_mib: float = None,
-    synchronous: bool = False,
 ) -> List[DownloadDetails]:
     """Process the raw download details of all the files discovered by the crawler.
 
@@ -205,11 +198,6 @@ def process_all_discovered_files_info(
         The path to the directory where the data will be downloaded.
     partition_size_in_mib: float
         The size of the partitions in MiB.
-    synchronous: bool
-        A boolean flag, if set equal to True, it sets the is_partitioned field from the
-        ItemToDownload named tuple to None as the field is not used in synchronous downloads. By
-        default is set equal to False, assuming that the default download method is a
-        concurrent download, where the is_partitioned flag is used.
 
     Returns
     -------
@@ -222,7 +210,6 @@ def process_all_discovered_files_info(
             file_info,
             path_to_data_directory,
             partition_size_in_mib,
-            synchronous,
         )
         for file_info in discovered_files_info
     ]
@@ -365,7 +352,6 @@ def pre_synchronous_download_processor(
     download_details = process_all_discovered_files_info(
         discovered_files_info,
         path_to_data_directory,
-        synchronous=True,
     )
     generate_manifest_file(download_details)
     return download_details
@@ -775,7 +761,6 @@ def pre_concurrent_download_processor(
         discovered_files_info,
         path_to_data_directory,
         partition_size_in_mib,
-        synchronous=False,
     )
     generate_manifest_file(download_details)
     return ConcurrentDownloadManifest(
