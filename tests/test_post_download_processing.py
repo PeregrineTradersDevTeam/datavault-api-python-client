@@ -1906,3 +1906,488 @@ class TestConcatenationProcessing:
         expected_concatenated_files = []
         assert concatenated_files == expected_concatenated_files
         # Cleanup - none
+
+
+class TestUpdateFailedDownloadManifest:
+    def test_update_of_download_manifest_with_no_failed_downloads(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        # Setup
+        initial_download_manifest = mocked_concurrent_download_manifest
+        failed_files = []
+        failed_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[],
+            concurrent_download_manifest=[],
+        )
+        # Exercise
+        updated_download_manifest = pdp.update_failed_download_manifest(
+            failed_download_manifest,
+            initial_download_manifest,
+            failed_files
+        )
+        # Verify
+        expected_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[],
+            concurrent_download_manifest=[],
+        )
+        assert updated_download_manifest == expected_download_manifest
+        # Cleanup - none
+
+    def test_update_of_download_manifest_scenario_2(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        """Tests the update_failed_download_manifest function.
+
+        Testing scenario:
+            - In the pre-concatenation phase no whole files failed the integrity test and
+            no file was found to be missing any partition (hence the failed_download_manifest
+            ConcurrentDownloadManifest named-tuple consists of two empty lists).
+            - In the post-concatenation phase, WATCHLIST_945_20201218 file fails the
+            integrity test.
+
+        Expected output:
+            A ConcurrentDownloadManifest with the whole_files_reference field consisting
+            of the DownloadDetails named-tuple for the WATCHLIST_945_20201218 file, and
+            the concurrent_download_manifest filed consisting of PartitionDownloadDetails
+            named-tuples, one for each of the partitions the WATCHLIST_945_20201218 file
+            was originally split into.
+        """
+        # Setup
+        initial_download_manifest = mocked_concurrent_download_manifest
+        failed_files = [
+            DownloadDetails(
+                file_name="WATCHLIST_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                    "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=51648457,
+                md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                is_partitioned=True,
+            ),
+        ]
+        failed_downloads_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[],
+            concurrent_download_manifest=[],
+        )
+        # Exercise
+        updated_download_manifest = pdp.update_failed_download_manifest(
+            failed_downloads_manifest,
+            initial_download_manifest,
+            failed_files,
+        )
+        # Verify
+        expected_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=0&end=5242880'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_1.txt"
+                    ),
+                    partition_index=1,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=5242881&end=10485760'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_2.txt"),
+                    partition_index=2,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=10485761&end=15728640'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_3.txt"
+                    ),
+                    partition_index=3,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=15728641&end=20971520'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_4.txt"
+                    ),
+                    partition_index=4,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=20971521&end=26214400'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_5.txt"
+                    ),
+                    partition_index=5,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=26214401&end=31457280'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_6.txt"
+                    ),
+                    partition_index=6,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=31457281&end=36700160'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_7.txt"
+                    ),
+                    partition_index=7,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=36700161&end=41943040'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_8.txt"
+                    ),
+                    partition_index=8,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=41943041&end=47185920'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_9.txt"
+                    ),
+                    partition_index=9,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=47185921&end=51648457'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_10.txt"
+                    ),
+                    partition_index=10,
+                ),
+            ],
+        )
+        assert updated_download_manifest == expected_download_manifest
+        # Cleanup - none
+
+    def test_update_of_download_manifest_scenario_3(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        """Tests the update_failed_download_manifest function.
+
+        Testing scenario:
+            - In the pre-concatenation phase, CROSSREF_945_20201218 failed the data
+            integrity test and the WATCHLIST_945_20201218 file had a missing partition (
+            hence the failed_download_manifest ConcurrentDownloadManifest named-tuple
+            consists of the whole_file_reference field that is a list of the DownloadDetails
+            tuples of the two files mentioned above, while the concurrent_download_manifest
+            filed is a list containing the missing partition of the WATCHLIST file plus the
+            DownloadDetails of the CROSSREF file).
+            - In the post-concatenation phase, COREREF_945_20201218 file fails the
+            integrity test.
+
+        Expected output:
+            A ConcurrentDownloadManifest with the whole_files_reference field consisting
+            of the DownloadDetails named-tuple for the CROSSREF, COREREF and WATCHLIST
+            files, and the concurrent_download_manifest filed consisting of all the
+            PartitionDownloadDetails named-tuples of the COREREF file, a
+            PartitionDownloadDetails of the missing partition of the WATCHLIST file, and
+            the DownloadDetails named-tuple of the CROSSREF file.
+        """
+        # Setup
+        initial_download_manifest = mocked_concurrent_download_manifest
+        failed_files = [
+            DownloadDetails(
+                file_name="COREREF_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                    "20201218-S945_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=24326963,
+                md5sum="8fc8fa1402e23f2d552899525b808514",
+                is_partitioned=True,
+            ),
+        ]
+        failed_downloads_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=47185921&end=51648457'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_10.txt"
+                    ),
+                    partition_index=10,
+                ),
+            ],
+        )
+        # Exercise
+        updated_download_manifest = pdp.update_failed_download_manifest(
+            failed_downloads_manifest,
+            initial_download_manifest,
+            failed_files,
+        )
+        # Verify
+        expected_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+                DownloadDetails(
+                    file_name="COREREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                        "20201218-S945_CORE_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=24326963,
+                    md5sum="8fc8fa1402e23f2d552899525b808514",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                DownloadDetails(
+                    file_name='CROSSREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'CROSS/20201218-S945_CROSS_ALL_0_0'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CROSS/"
+                        "CROSSREF_945_20201218.txt.bz2"
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(2020, 12, 18, 0, 0),
+                    size=35150,
+                    md5sum='13da7cea9a7337cd71fd9aea4f909bc6',
+                    is_partitioned=False
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=47185921&end=51648457'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_10.txt"
+                    ),
+                    partition_index=10,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=0&end=5242880'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_1.txt"
+                    ),
+                    partition_index=1,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=5242881&end=10485760'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_2.txt"
+                    ),
+                    partition_index=2,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=10485761&end=15728640'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_3.txt"
+                    ),
+                    partition_index=3,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=15728641&end=20971520'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_4.txt"
+                    ),
+                    partition_index=4,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=20971521&end=24326963'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_5.txt"
+                    ),
+                    partition_index=5,
+                ),
+            ],
+        )
+        assert updated_download_manifest == expected_download_manifest
+        # Cleanup - none
