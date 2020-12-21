@@ -85,13 +85,13 @@ class TestCheckIfPartitioned:
 class TestProcessRawDownloadInfo:
     def test_processing_of_raw_download_info_with_synchronous_flag_set_to_false(
         self,
-        mocked_set_of_files_available_to_download_single_instrument
+        mocked_files_available_to_download_single_instrument
     ):
         # Setup
         path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
         size_of_partition_in_mib = 5.0
         # Exercise
-        for file_details in mocked_set_of_files_available_to_download_single_instrument:
+        for file_details in mocked_files_available_to_download_single_instrument:
             processed_download_details = pdp.process_raw_download_info(
                 file_details, path_to_data_folder, size_of_partition_in_mib
             )
@@ -115,16 +115,16 @@ class TestProcessRawDownloadInfo:
         assert processed_download_details == correct_download_details
         # Cleanup - none
 
-    def test_processing_of_raw_download_info_with_synchronous_flag_set_to_true(
+    def test_processing_of_raw_download_info_without_partition_size(
         self,
-        mocked_set_of_files_available_to_download_single_instrument
+        mocked_files_available_to_download_single_instrument
     ):
         # Setup
         path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
         # Exercise
-        for file_details in mocked_set_of_files_available_to_download_single_instrument:
+        for file_details in mocked_files_available_to_download_single_instrument:
             processed_download_details = pdp.process_raw_download_info(
-                file_details, path_to_data_folder, synchronous=True,
+                file_details, path_to_data_folder,
             )
         # Verify
         correct_download_details = DownloadDetails(
@@ -150,37 +150,36 @@ class TestProcessRawDownloadInfo:
 class TestProcessAllDiscoveredFilesInfo:
     def test_processing_of_all_discovered_files_info_with_synchronous_flag_set_to_false(
         self,
-        mocked_set_of_files_available_to_download_single_source_single_day,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_files_available_to_download_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
         # Setup
         path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
         partition_size_in_mb = 5.0
         # Exercise
         list_of_processed_download_details = pdp.process_all_discovered_files_info(
-            mocked_set_of_files_available_to_download_single_source_single_day,
+            mocked_files_available_to_download_single_source_single_day,
             path_to_data_folder,
             partition_size_in_mb,
         )
         # Verify
         expected_result = (
-            mocked_list_of_whole_files_download_details_single_source_single_day
+            mocked_whole_files_download_details_single_source_single_day
         )
         assert list_of_processed_download_details == expected_result
         # Cleanup - none
 
     def test_processing_of_all_discovered_files_info_with_synchronous_flag_set_to_true(
         self,
-        mocked_set_of_files_available_to_download_single_source_single_day,
+        mocked_files_available_to_download_single_source_single_day,
         mocked_whole_files_download_details_single_source_single_day_synchronous_case,
     ):
         # Setup
         path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
         # Exercise
         list_of_processed_download_details = pdp.process_all_discovered_files_info(
-            mocked_set_of_files_available_to_download_single_source_single_day,
+            mocked_files_available_to_download_single_source_single_day,
             path_to_data_folder,
-            synchronous=True,
         )
         # Verify
         expected_result = (
@@ -189,18 +188,17 @@ class TestProcessAllDiscoveredFilesInfo:
         assert list_of_processed_download_details == expected_result
         # Cleanup - none
 
-    def test_processing_of_all_discovered_files_info_on_multiple_days_with_synchronous_flag_on(
+    def test_processing_of_all_discovered_files_info_on_multiple_days_omitting_partition_size(
         self,
-        mocked_set_of_files_available_to_download_single_source_multiple_days,
+        mocked_files_available_to_download_single_source_multiple_days,
         mocked_download_info_single_source_multiple_days_synchronous,
     ):
         # Setup
         path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Temp" / "Data"
         # Exercise
         list_of_processed_download_details = pdp.process_all_discovered_files_info(
-            mocked_set_of_files_available_to_download_single_source_multiple_days,
+            mocked_files_available_to_download_single_source_multiple_days,
             path_to_data_folder,
-            synchronous=True,
         )
         # Verify
         expected_result = mocked_download_info_single_source_multiple_days_synchronous
@@ -209,17 +207,16 @@ class TestProcessAllDiscoveredFilesInfo:
 
     def test_processing_of_all_discovered_files_info_on_multiple_days_with_synchronous_flag_off(
         self,
-        mocked_set_of_files_available_to_download_single_source_multiple_days,
+        mocked_files_available_to_download_single_source_multiple_days,
         mocked_download_info_single_source_multiple_days_concurrent,
     ):
         # Setup
         path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Temp" / "Data"
         # Exercise
         list_of_processed_download_details = pdp.process_all_discovered_files_info(
-            mocked_set_of_files_available_to_download_single_source_multiple_days,
+            mocked_files_available_to_download_single_source_multiple_days,
             path_to_data_folder,
             partition_size_in_mib=5.0,
-            synchronous=False,
         )
         # Verify
         expected_result = mocked_download_info_single_source_multiple_days_concurrent
@@ -310,8 +307,8 @@ class TestFilterDateSpecificInfo:
             ItemToDownload(
                 file_name='WATCHLIST_207_20200720.txt.bz2',
                 download_url=(
-                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/WATCHLIST/'
-                    '20200720-S207_WATCHLIST_username_0_0'
+                    'https://api.icedatavault.icedataservices.com/v2/data/2020/07/20/S207/'
+                    'WATCHLIST/20200720-S207_WATCHLIST_username_0_0'
                 ),
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
                     'Temp/Data/', '2020/07/20/S207/WATCHLIST/WATCHLIST_207_20200720.txt.bz2'
@@ -572,10 +569,10 @@ class TestGenerateManifestFile:
 class TestPreSynchronousDownloadProcessor:
     def test_pre_synchronous_download_data_processing(
         self,
-        mocked_set_of_files_available_to_download_single_source_single_day
+        mocked_files_available_to_download_single_source_single_day
     ):
         # Setup
-        discovered_files_info = mocked_set_of_files_available_to_download_single_source_single_day
+        discovered_files_info = mocked_files_available_to_download_single_source_single_day
         path_to_data_directory = pathlib.Path(__file__).resolve().parent.joinpath("Temp/Data")
         # Exercise
         download_details = pdp.pre_synchronous_download_processor(
@@ -1086,7 +1083,7 @@ class TestCreateListOfFileSpecificPartitionsDownloadInfo:
     def test_generation_list_of_partitions_download_info(
         self,
         mocked_download_details_single_instrument,
-        mocked_list_of_file_partitions_single_instrument,
+        mocked_file_partitions_single_instrument,
     ):
         # Setup
         file_specific_download_details = mocked_download_details_single_instrument
@@ -1096,7 +1093,7 @@ class TestCreateListOfFileSpecificPartitionsDownloadInfo:
             file_specific_download_details, partition_size_in_mb
         )
         # Verify
-        assert partitions_download_info == mocked_list_of_file_partitions_single_instrument
+        assert partitions_download_info == mocked_file_partitions_single_instrument
         # Cleanup - none
 
 
@@ -1166,67 +1163,87 @@ class TestFilterFilesToSplit:
         # Cleanup - none
 
 
-class TestGenerateListOfWholeFilesAndPartitionsDownloadDetails:
-    def test_generation_of_mixed_download_details(
+class TestGenerateWholeFilesDownloadManifest:
+    def test_generation_of_whole_files_download_manifest(
         self,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
-        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
-        # Setup
-        whole_files_download_details = (
-            mocked_list_of_whole_files_download_details_single_source_single_day
-        )
-        size_of_partitions_in_mb = 5.0
+        # Setup - none
         # Exercise
-        download_manifest = pdp.generate_whole_files_and_partitions_download_manifest(
-            whole_files_download_details, size_of_partitions_in_mb
+        download_manifest = pdp.generate_whole_files_download_manifest(
+            mocked_whole_files_download_details_single_source_single_day,
         )
         # Verify
-        assert (
-            download_manifest
-            == mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
-        )
+        expected_download_manifest = [
+            file for file in mocked_whole_files_download_details_single_source_single_day
+            if file.is_partitioned is False
+        ]
+        assert download_manifest == expected_download_manifest
+        # Cleanup - none
+
+    def test_generation_of_whole_files_download_manifest_with_no_whole_files(
+        self,
+        mocked_whole_files_download_details_single_source_single_day,
+    ):
+        # Setup
+        download_info = [
+            file for file in mocked_whole_files_download_details_single_source_single_day
+            if file.is_partitioned is True
+        ]
+        # Exercise
+        download_manifest = pdp.generate_whole_files_download_manifest(download_info)
+        # Verify
+        assert download_manifest == []
         # Cleanup - none
 
 
-class TestPrepareDownloadManifests:
-    def test_preparation_of_data_for_download(
+class TestGeneratePartitionsDownloadManifest:
+    def test_generation_of_partitions_download_manifest(
         self,
-        mocked_set_of_files_available_to_download_single_source_single_day,
-        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
+        mocked_partitions_download_details_single_source_single_day,
     ):
         # Setup
-        path_to_data_folder = pathlib.Path(__file__).resolve().parent / "Data"
+        partition_size = 5.0
         # Exercise
-        (
-            whole_files_download_details,
-            whole_files_and_partitions_download_details,
-        ) = pdp.prepare_download_manifests(
-            mocked_set_of_files_available_to_download_single_source_single_day,
-            path_to_data_folder,
+        download_manifest = pdp.generate_partitions_download_manifest(
+            mocked_whole_files_download_details_single_source_single_day,
+            partition_size_in_mib=partition_size,
         )
         # Verify
-        assert (
-            whole_files_download_details
-            == mocked_list_of_whole_files_download_details_single_source_single_day
+        assert download_manifest == mocked_partitions_download_details_single_source_single_day
+        # Cleanup - none
+
+    def test_generation_of_partitions_download_manifest_with_no_partitioned_files(
+        self,
+        mocked_whole_files_download_details_single_source_single_day,
+        mocked_partitions_download_details_single_source_single_day,
+    ):
+        # Setup
+        partition_size = 5.0
+        whole_files_download_info = [
+            file for file in mocked_whole_files_download_details_single_source_single_day
+            if file.is_partitioned is False
+        ]
+        # Exercise
+        download_manifest = pdp.generate_partitions_download_manifest(
+            whole_files_download_info,
+            partition_size_in_mib=partition_size,
         )
-        assert (
-            whole_files_and_partitions_download_details
-            == mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
-        )
+        # Verify
+        assert download_manifest == []
         # Cleanup - none
 
 
 class TestPreConcurrentDownloadProcessor:
     def test_pre_concurrent_download_data_processing(
         self,
-        mocked_set_of_files_available_to_download_single_source_single_day,
-        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_files_available_to_download_single_source_single_day,
+        mocked_partitions_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
         # Setup
-        discovered_files_info = mocked_set_of_files_available_to_download_single_source_single_day
+        discovered_files_info = mocked_files_available_to_download_single_source_single_day
         path_to_data_directory = pathlib.Path(__file__).resolve().parent.joinpath("Data").as_posix()
         # Exercise
         download_manifest = pdp.pre_concurrent_download_processor(
@@ -1234,12 +1251,14 @@ class TestPreConcurrentDownloadProcessor:
             path_to_data_directory,
         )
         # Verify
-        whole_files = mocked_list_of_whole_files_download_details_single_source_single_day
-        concurrent_manifest = (
-            mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
-        )
-        assert download_manifest.whole_files_reference == whole_files
-        assert download_manifest.concurrent_download_manifest == concurrent_manifest[0]
+        expected_reference_data = mocked_whole_files_download_details_single_source_single_day
+        expected_whole_files = [
+            file for file in expected_reference_data if file.is_partitioned is False
+        ]
+        expected_partitions = mocked_partitions_download_details_single_source_single_day
+        assert download_manifest.files_reference_data == expected_reference_data
+        assert download_manifest.whole_files_to_download == expected_whole_files
+        assert download_manifest.partitions_to_download == expected_partitions
         # Cleanup
         pathlib.Path(__file__).resolve().parent.joinpath(
             "Data/2020/07/22/download_manifest_20200722.json"
