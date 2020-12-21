@@ -1,10 +1,13 @@
+import datetime
 import os
 import pathlib
-import datetime
-import pytest
 
 from datavault_api_client import post_download_processing as pdp
-from datavault_api_client.data_structures import DownloadDetails, PartitionDownloadDetails
+from datavault_api_client.data_structures import (
+    ConcurrentDownloadManifest,
+    DownloadDetails,
+    PartitionDownloadDetails,
+)
 
 
 class TestGetNonPartitionedFiles:
@@ -84,8 +87,8 @@ class TestGetPartitionedFiles:
             DownloadDetails(
                 file_name="WATCHLIST_945_20200722.txt.bz2",
                 download_url=(
-                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/WATCHLIST/"
-                    "20200722-S945_WATCHLIST_username_0_0"
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/22/S945/"
+                    "WATCHLIST/20200722-S945_WATCHLIST_username_0_0"
                 ),
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
                     "Data/2020/07/22/S945/WATCHLIST", "WATCHLIST_945_20200722.txt.bz2"
@@ -410,6 +413,7 @@ class TestGetAllMissingPartitions:
                 mocked_download_details_multiple_sources_single_day,
                 mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
             )
+        missing_partitions.sort(key=lambda x: x.parent_file_name)
         # Verify
         expected_missing_partitions = [
             PartitionDownloadDetails(
@@ -818,12 +822,13 @@ class TestGetFilesReadyForConcatenation:
             )
         ]
         # Exercise
-        computed_files_ready_for_concatenation = (
+        files_ready_for_concatenation = (
             pdp.get_files_ready_for_concatenation(
                 whole_files_download_details,
                 files_with_missing_partitions,
             )
         )
+        files_ready_for_concatenation.sort(key=lambda x: x.file_name)
         # Verify
         expected_files_to_concatenate = [
             'CROSSREF_207_20200721.txt.bz2',
@@ -833,7 +838,7 @@ class TestGetFilesReadyForConcatenation:
             item for item in whole_files_download_details
             if item.file_name in expected_files_to_concatenate
         ]
-        assert computed_files_ready_for_concatenation == expected_files_ready_for_concatenation
+        assert files_ready_for_concatenation == expected_files_ready_for_concatenation
         # Cleanup - none
 
     def test_no_file_ready_for_concatenation_scenario(
@@ -1012,3 +1017,892 @@ class TestConcatenateEachFilePartitions:
         directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
+
+
+class TestFilterFilesReadyForIntegrityTest:
+    def test_no_file_with_missing_partitions_scenario(
+        self,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_manifest = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = []
+        # Exercise
+        files_ready_for_integrity_test = pdp.get_files_ready_for_integrity_test(
+            files_with_missing_partitions,
+            whole_files_download_manifest,
+        )
+        # Verify
+        assert (
+            files_ready_for_integrity_test.sort(key=lambda x: x.file_name) ==
+            whole_files_download_manifest.sort(key=lambda x: x.file_name)
+        )
+        # Cleanup - none
+
+    def test_files_with_missing_partitions_scenario(
+        self,
+        mocked_download_details_multiple_sources_single_day,
+    ):
+        # Setup
+        whole_files_download_manifest = mocked_download_details_multiple_sources_single_day
+        files_with_missing_partitions = [
+            DownloadDetails(
+                file_name="WATCHLIST_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/"
+                    "WATCHLIST/20200721-S207_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S207/WATCHLIST", "WATCHLIST_207_20200721.txt.bz2"
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=72293374,
+                md5sum="36e444a8362e7db52af50ee0f8dc0d2e",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/"
+                    "WATCHLIST/20200721-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S367/WATCHLIST", "WATCHLIST_367_20200721.txt.bz2"
+                ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=82451354,
+                md5sum="62df718ef5eb5f9f1ea3f6ea1f826c30",
+                is_partitioned=True,
+            ),
+        ]
+        files_ready_for_integrity_test = pdp.get_files_ready_for_integrity_test(
+            files_with_missing_partitions,
+            whole_files_download_manifest,
+        )
+        # Verify
+        expected_files = [
+            DownloadDetails(
+                file_name="COREREF_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/"
+                    "S207/CORE/20200721-S207_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S207/CORE", "COREREF_207_20200721.txt.bz2"
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=4590454,
+                md5sum="c1a079841f84676e91b5021afd3f5272",
+                is_partitioned=False,
+            ),
+            DownloadDetails(
+                file_name="COREREF_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/"
+                    "S367/CORE/20200721-S367_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S367/CORE", "COREREF_367_20200721.txt.bz2"
+                ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=706586,
+                md5sum="e28385e918aa71720235232c9a895b64",
+                is_partitioned=False,
+            ),
+            DownloadDetails(
+                file_name="CROSSREF_207_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S207/CROSS/"
+                    "20200721-S207_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S207/CROSS", "CROSSREF_207_20200721.txt.bz2"
+                ),
+                source_id=207,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=14690557,
+                md5sum="f2683cd87a7b29f3b8776373d56a8456",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="CROSSREF_367_20200721.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/21/S367/CROSS/"
+                    "20200721-S367_CROSS_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data/2020/07/21/S367/CROSS", "CROSSREF_367_20200721.txt.bz2"
+                ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
+                size=879897,
+                md5sum="fdb7592c8806a28f59c4d4da1e934c43",
+                is_partitioned=False,
+            ),
+        ]
+        assert (
+            files_ready_for_integrity_test.sort(key=lambda x: x.file_name) ==
+            expected_files.sort(key=lambda x: x.file_name)
+        )
+        # Cleanup - none
+
+
+class TestPreConcatenationProcessing:
+    def test_scenario_1(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        """Tests the pre_concatenation_processing function.
+
+        Testing scenario:
+            - Whole file correctly downloaded,
+            - COREREF file correctly downloaded (all partitions are downloaded)
+            - WATCHLIST file missing two partitions
+
+        Expected output:
+            A ConcurrentDownloadManifest with the whole_files_reference field consisting
+            only of the WATCHLIST file and the concurrent_download_manifest field
+            consisting of a list with the download details of the two missing partitions.
+        """
+        # Setup
+        #  Create the partitions for the CROSSREF file
+        partitions_to_create = [
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_6.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_7.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_8.txt"
+            ),
+        ]
+
+        for partition_path in partitions_to_create:
+            partition_path.touch()
+        # Exercise
+        failed_downloads = pdp.pre_concatenation_processing(
+            mocked_concurrent_download_manifest,
+        )
+        # Verify
+        expected_failed_downloads = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=41943041&end=47185920'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_9.txt"
+                    ),
+                    partition_index=9,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=47185921&end=51648457'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_10.txt"
+                    ),
+                    partition_index=10,
+                )
+            ]
+        )
+        assert failed_downloads == expected_failed_downloads
+        # Cleanup - none
+        for partition in partitions_to_create:
+            partition.unlink()
+
+    def test_scenario_2(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        """Tests the pre_concatenation_processing function.
+
+        Testing scenario:
+            - Whole file correctly downloaded,
+            - COREREF file correctly downloaded (all partitions are downloaded)
+            - WATCHLIST file correctly downloaded
+
+        Expected output:
+            A ConcurrentDownloadManifest with the whole_files_reference field consisting
+            of an empty list and the concurrent_download_manifest field consisting of an
+            empty list as well.
+        """
+        # Setup
+        partitions_to_create = [
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_6.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_7.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_8.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_9.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_10.txt"
+            ),
+        ]
+
+        for partition_path in partitions_to_create:
+            partition_path.touch()
+
+        # Exercise
+        failed_downloads = pdp.pre_concatenation_processing(
+            mocked_concurrent_download_manifest,
+        )
+        # Verify
+        expected_failed_downloads = ConcurrentDownloadManifest(
+            whole_files_reference=[],
+            concurrent_download_manifest=[]
+        )
+        assert failed_downloads == expected_failed_downloads
+        # Cleanup - none
+        for partition in partitions_to_create:
+            partition.unlink()
+
+    def test_scenario_3(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        """Tests the pre_concatenation_processing function.
+
+        Testing scenario:
+            - Whole file correctly downloaded,
+            - COREREF file missing a partition
+            - WATCHLIST file missing a partition
+
+        Expected output:
+            A ConcurrentDownloadManifest with the whole_files_reference field consisting
+            of an empty list and the concurrent_download_manifest field consisting of an
+            empty list as well.
+        """
+        # Setup
+        partitions_to_create = [
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_6.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_7.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_8.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_10.txt"
+            ),
+        ]
+
+        for partition_path in partitions_to_create:
+            partition_path.touch()
+        # Exercise
+        failed_downloads = pdp.pre_concatenation_processing(
+            mocked_concurrent_download_manifest,
+        )
+        # Verify
+        expected_failed_downloads = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="COREREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                        "20201218-S945_CORE_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=24326963,
+                    md5sum="8fc8fa1402e23f2d552899525b808514",
+                    is_partitioned=True,
+                ),
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=15728641&end=20971520'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_4.txt"
+                    ),
+                    partition_index=4,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=41943041&end=47185920'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_9.txt"
+                    ),
+                    partition_index=9,
+                ),
+            ]
+        )
+        assert (failed_downloads.whole_files_reference.sort(key=lambda x: x.file_name)
+                == expected_failed_downloads.whole_files_reference.sort(key=lambda x: x.file_name))
+        assert (
+            failed_downloads.concurrent_download_manifest.sort(key=lambda x: x.parent_file_name)
+            == expected_failed_downloads.concurrent_download_manifest.sort(
+                key=lambda x: x.parent_file_name)
+        )
+        # Cleanup - none
+        for partition in partitions_to_create:
+            partition.unlink()
+
+    def test_scenario_4(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        """Tests the pre_concatenation_processing function.
+
+        Testing scenario:
+            - Whole file correctly downloaded,
+            - COREREF file correctly downloaded (all partitions are downloaded)
+            - WATCHLIST file correctly downloaded
+
+        Expected output:
+            A ConcurrentDownloadManifest with the whole_files_reference field consisting
+            of an empty list and the concurrent_download_manifest field consisting of an
+            empty list as well.
+        """
+        # Setup
+        partitions_to_create = [
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_1.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_2.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_3.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_4.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_5.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_6.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_7.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_8.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_9.txt"
+            ),
+            pathlib.Path(__file__).resolve().parent.joinpath(
+                "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                "WATCHLIST_945_20201218_10.txt"
+            ),
+        ]
+
+        for partition_path in partitions_to_create:
+            partition_path.touch()
+
+        crossref_file_path = pathlib.Path(__file__).resolve().parent.joinpath(
+            "static_data/post_processing_scenario_1",
+            "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+        )
+        crossref_destination = pathlib.Path(__file__).resolve().parent.joinpath(
+            "static_data/CROSSREF_945_20201218.txt.bz2"
+        )
+        if not crossref_destination.exists():
+            crossref_file_path.replace(crossref_destination)
+
+        crossref_file_path.touch()
+
+        # Exercise
+        failed_downloads = pdp.pre_concatenation_processing(
+            mocked_concurrent_download_manifest,
+        )
+        # Verify
+        expected_failed_downloads = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+            ],
+            concurrent_download_manifest=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+            ]
+        )
+        assert failed_downloads == expected_failed_downloads
+        # Cleanup - none
+        for partition in partitions_to_create:
+            partition.unlink()
+
+        crossref_file_path.unlink()
+
+        if not crossref_file_path.exists():
+            crossref_destination.replace(crossref_file_path)
+
+
+class TestConcatenationProcessing:
+    def test_concatenation_processing_no_missing_partition_files_scenario(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        # Setup
+        failed_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+            ],
+            concurrent_download_manifest=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+            ]
+        )
+        # Exercise
+        concatenated_files = pdp.concatenation_processing(
+            mocked_concurrent_download_manifest,
+            failed_download_manifest,
+        )
+        # Verify
+        expected_concatenated_files = [
+            DownloadDetails(
+                file_name="COREREF_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                    "20201218-S945_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=24326963,
+                md5sum="8fc8fa1402e23f2d552899525b808514",
+                is_partitioned=True,
+            ),
+            DownloadDetails(
+                file_name="WATCHLIST_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/WATCHLIST"
+                    "/20201218-S945_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=51648457,
+                md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                is_partitioned=True,
+            ),
+        ]
+        assert (
+            concatenated_files.sort(key=lambda x: x.file_name) ==
+            expected_concatenated_files.sort(key=lambda x: x.file_name)
+        )
+        # Cleanup - none
+
+    def test_concatenation_processing_one_missing_partition_files_scenario(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        # Setup
+        failed_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=41943041&end=47185920'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_9.txt"
+                    ),
+                    partition_index=9,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=47185921&end=51648457'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_10.txt"
+                    ),
+                    partition_index=10,
+                )
+            ]
+        )
+        # Exercise
+        concatenated_files = pdp.concatenation_processing(
+            mocked_concurrent_download_manifest,
+            failed_download_manifest,
+        )
+        # Verify
+        expected_concatenated_files = [
+            DownloadDetails(
+                file_name="COREREF_945_20201218.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                    "20201218-S945_CORE_ALL_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "static_data/post_processing_scenario_1",
+                    "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                ),
+                source_id=945,
+                reference_date=datetime.datetime(year=2020, month=12, day=18),
+                size=24326963,
+                md5sum="8fc8fa1402e23f2d552899525b808514",
+                is_partitioned=True,
+            ),
+        ]
+        assert concatenated_files == expected_concatenated_files
+        # Cleanup - none
+
+    def test_concatenation_processing_with_no_file_to_concatenate(
+        self,
+        mocked_concurrent_download_manifest,
+    ):
+        # Setup
+        failed_download_manifest = ConcurrentDownloadManifest(
+            whole_files_reference=[
+                DownloadDetails(
+                    file_name="COREREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/"
+                        "20201218-S945_CORE_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CORE/COREREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=24326963,
+                    md5sum="8fc8fa1402e23f2d552899525b808514",
+                    is_partitioned=True,
+                ),
+                DownloadDetails(
+                    file_name="WATCHLIST_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "WATCHLIST/20201218-S945_WATCHLIST_username_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/WATCHLIST/WATCHLIST_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=51648457,
+                    md5sum="11c5253a7cd1743aea93ec5124fd974d",
+                    is_partitioned=True,
+                ),
+            ],
+            concurrent_download_manifest=[
+                PartitionDownloadDetails(
+                    parent_file_name='COREREF_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/CORE/'
+                        '20201218-S945_CORE_ALL_0_0?start=15728641&end=20971520'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/CORE/"
+                        "COREREF_945_20201218_4.txt"
+                    ),
+                    partition_index=4,
+                ),
+                PartitionDownloadDetails(
+                    parent_file_name='WATCHLIST_945_20201218.txt.bz2',
+                    download_url=(
+                        'https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/'
+                        'WATCHLIST/20201218-S945_WATCHLIST_username_0_0?start=41943041&end=47185920'
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1/2020/12/18/WATCHLIST/"
+                        "WATCHLIST_945_20201218_9.txt"
+                    ),
+                    partition_index=9,
+                ),
+            ]
+        )
+        # Exercise
+        concatenated_files = pdp.concatenation_processing(
+            mocked_concurrent_download_manifest,
+            failed_download_manifest,
+        )
+        # Verify
+        expected_concatenated_files = []
+        assert concatenated_files == expected_concatenated_files
+        # Cleanup - none
