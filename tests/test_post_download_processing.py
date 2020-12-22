@@ -13,12 +13,12 @@ from datavault_api_client.data_structures import (
 class TestGetNonPartitionedFiles:
     def test_identification_of_non_partitioned_files(
         self,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
         # Setup
         # Exercise
         non_partitioned_files = pdp.get_non_partitioned_files(
-            mocked_list_of_whole_files_download_details_single_source_single_day,
+            mocked_whole_files_download_details_single_source_single_day,
         )
         # Verify
         expected_files = [
@@ -58,11 +58,11 @@ class TestGetNonPartitionedFiles:
 
     def test_scenario_without_non_partitioned_files(
         self,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
         # Setup
         files_to_filter = [
-            file for file in mocked_list_of_whole_files_download_details_single_source_single_day
+            file for file in mocked_whole_files_download_details_single_source_single_day
             if file.is_partitioned is True
         ]
         # Exercise
@@ -75,12 +75,12 @@ class TestGetNonPartitionedFiles:
 class TestGetPartitionedFiles:
     def test_identification_of_partitioned_files(
         self,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
         # Setup
         # Exercise
         partitioned_files = pdp.get_partitioned_files(
-            mocked_list_of_whole_files_download_details_single_source_single_day,
+            mocked_whole_files_download_details_single_source_single_day,
         )
         # Verify
         expected_files = [
@@ -105,11 +105,11 @@ class TestGetPartitionedFiles:
 
     def test_scenario_with_no_partitioned_files(
         self,
-        mocked_list_of_whole_files_download_details_single_source_single_day,
+        mocked_whole_files_download_details_single_source_single_day,
     ):
         # Setup
         files_to_filter = [
-            file for file in mocked_list_of_whole_files_download_details_single_source_single_day
+            file for file in mocked_whole_files_download_details_single_source_single_day
             if file.is_partitioned is False
         ]
         # Exercise
@@ -122,40 +122,34 @@ class TestGetPartitionedFiles:
 class TestGetPartitionsDownloadDetails:
     def test_identification_of_partition_details(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day,
+        mocked_partitions_download_details_single_source_single_day,
     ):
         # Setup
-        files_and_partitions = (
-            mocked_list_of_whole_files_and_partitions_download_details_single_source_single_day
-        )
+        partitions = mocked_partitions_download_details_single_source_single_day
         # Exercise
         computed_partitions_download_details = pdp.get_partitions_download_details(
-                files_and_partitions,
+            partitions,
         )
         # Verify
-        expected_partitions_download_details = [
-            item for item in files_and_partitions
-            if type(item) is PartitionDownloadDetails]
-        assert computed_partitions_download_details == expected_partitions_download_details
+        assert computed_partitions_download_details == partitions
         # Cleanup - none
 
     def test_identification_of_name_specific_partition_download_details(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_partitions_download_details_multiple_sources_single_day,
     ):
         # Setup
         parent_file_name = 'WATCHLIST_367_20200721.txt.bz2'
-        files_and_partitions = (
-            mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day
-        )
+        partitions = mocked_partitions_download_details_multiple_sources_single_day
         # Exercise
         computed_list_of_name_specific_partitions = pdp.get_partitions_download_details(
-                files_and_partitions, parent_file_name,
+            partitions,
+            parent_file_name,
         )
         # Verify
         expected_names_of_specific_partitions = [
-            item for item in files_and_partitions
-            if type(item) is PartitionDownloadDetails and item.parent_file_name == parent_file_name
+            item for item in partitions
+            if item.parent_file_name == parent_file_name
         ]
         assert computed_list_of_name_specific_partitions == expected_names_of_specific_partitions
         # Cleanup - none
@@ -206,7 +200,7 @@ class TestGetListOfDownloadedPartitions:
 class TestGetFileSpecificMissingPartitions:
     def test_identification_of_missing_partitions(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_partitions_download_details_multiple_sources_single_day,
     ):
         # Setup
         base_path = pathlib.Path(__file__).resolve().parent.joinpath(
@@ -251,7 +245,7 @@ class TestGetFileSpecificMissingPartitions:
         # Exercise
         computed_missing_partitions = pdp.get_file_specific_missing_partitions(
             file_specific_download_details,
-            mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+            mocked_partitions_download_details_multiple_sources_single_day,
         )
         # Verify
         expected_missing_partitions = [
@@ -294,7 +288,7 @@ class TestGetFileSpecificMissingPartitions:
 
     def test_no_missing_partition_scenario(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_partitions_download_details_multiple_sources_single_day,
     ):
         # Setup
         base_path = pathlib.Path(__file__).resolve().parent.joinpath(
@@ -341,7 +335,7 @@ class TestGetFileSpecificMissingPartitions:
         # Exercise
         computed_missing_partitions = pdp.get_file_specific_missing_partitions(
             file_specific_download_details,
-            mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+            mocked_partitions_download_details_multiple_sources_single_day,
         )
         # Verify
         assert computed_missing_partitions == []
@@ -358,7 +352,7 @@ class TestGetFileSpecificMissingPartitions:
 class TestGetAllMissingPartitions:
     def test_identification_of_missing_partitions(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_partitions_download_details_multiple_sources_single_day,
         mocked_download_details_multiple_sources_single_day
     ):
         # Setup
@@ -411,7 +405,7 @@ class TestGetAllMissingPartitions:
         # Exercise
         missing_partitions = pdp.get_all_missing_partitions(
                 mocked_download_details_multiple_sources_single_day,
-                mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+                mocked_partitions_download_details_multiple_sources_single_day,
             )
         missing_partitions.sort(key=lambda x: x.parent_file_name)
         # Verify
@@ -478,7 +472,7 @@ class TestGetAllMissingPartitions:
 
     def test_scenario_of_one_file_only_with_missing_partitions(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_partitions_download_details_multiple_sources_single_day,
         mocked_download_details_multiple_sources_single_day
     ):
         # Setup
@@ -533,7 +527,7 @@ class TestGetAllMissingPartitions:
         # Exercise
         missing_partitions = pdp.get_all_missing_partitions(
                 mocked_download_details_multiple_sources_single_day,
-                mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+                mocked_partitions_download_details_multiple_sources_single_day,
             )
         # Verify
         expected_missing_partitions = [
@@ -576,7 +570,7 @@ class TestGetAllMissingPartitions:
 
     def test_scenario_of_no_missing_partitions(
         self,
-        mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+        mocked_partitions_download_details_multiple_sources_single_day,
         mocked_download_details_multiple_sources_single_day
     ):
         # Setup
@@ -633,7 +627,7 @@ class TestGetAllMissingPartitions:
         # Exercise
         missing_partitions = pdp.get_all_missing_partitions(
                 mocked_download_details_multiple_sources_single_day,
-                mocked_list_of_whole_files_and_partitions_download_details_multiple_sources_single_day,
+                mocked_partitions_download_details_multiple_sources_single_day,
             )
         # Verify
         assert missing_partitions == []
@@ -1169,7 +1163,6 @@ class TestPreConcatenationProcessing:
             consisting of a list with the download details of the two missing partitions.
         """
         # Setup
-        #  Create the partitions for the CROSSREF file
         partitions_to_create = [
             pathlib.Path(__file__).resolve().parent.joinpath(
                 "static_data/post_processing_scenario_1/2020/12/18/CORE/COREREF_945_20201218_1.txt"
@@ -1228,7 +1221,7 @@ class TestPreConcatenationProcessing:
         )
         # Verify
         expected_failed_downloads = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="WATCHLIST_945_20201218.txt.bz2",
                     download_url=(
@@ -1246,7 +1239,8 @@ class TestPreConcatenationProcessing:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[],
+            partitions_to_download=[
                 PartitionDownloadDetails(
                     parent_file_name='WATCHLIST_945_20201218.txt.bz2',
                     download_url=(
@@ -1362,8 +1356,9 @@ class TestPreConcatenationProcessing:
         )
         # Verify
         expected_failed_downloads = ConcurrentDownloadManifest(
-            whole_files_reference=[],
-            concurrent_download_manifest=[]
+            files_reference_data=[],
+            whole_files_to_download=[],
+            partitions_to_download=[],
         )
         assert failed_downloads == expected_failed_downloads
         # Cleanup - none
@@ -1446,7 +1441,7 @@ class TestPreConcatenationProcessing:
         )
         # Verify
         expected_failed_downloads = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="COREREF_945_20201218.txt.bz2",
                     download_url=(
@@ -1480,7 +1475,8 @@ class TestPreConcatenationProcessing:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[],
+            partitions_to_download=[
                 PartitionDownloadDetails(
                     parent_file_name='COREREF_945_20201218.txt.bz2',
                     download_url=(
@@ -1507,11 +1503,11 @@ class TestPreConcatenationProcessing:
                 ),
             ]
         )
-        assert (failed_downloads.whole_files_reference.sort(key=lambda x: x.file_name)
-                == expected_failed_downloads.whole_files_reference.sort(key=lambda x: x.file_name))
+        assert (failed_downloads.files_reference_data.sort(key=lambda x: x.file_name)
+                == expected_failed_downloads.files_reference_data.sort(key=lambda x: x.file_name))
         assert (
-            failed_downloads.concurrent_download_manifest.sort(key=lambda x: x.parent_file_name)
-            == expected_failed_downloads.concurrent_download_manifest.sort(
+            failed_downloads.partitions_to_download.sort(key=lambda x: x.parent_file_name)
+            == expected_failed_downloads.partitions_to_download.sort(
                 key=lambda x: x.parent_file_name)
         )
         # Cleanup - none
@@ -1525,7 +1521,7 @@ class TestPreConcatenationProcessing:
         """Tests the pre_concatenation_processing function.
 
         Testing scenario:
-            - Whole file correctly downloaded,
+            - CROSSREF file incorrectly downloaded,
             - COREREF file correctly downloaded (all partitions are downloaded)
             - WATCHLIST file correctly downloaded
 
@@ -1614,7 +1610,7 @@ class TestPreConcatenationProcessing:
         )
         # Verify
         expected_failed_downloads = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -1632,7 +1628,7 @@ class TestPreConcatenationProcessing:
                     is_partitioned=False,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -1649,7 +1645,8 @@ class TestPreConcatenationProcessing:
                     md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
                     is_partitioned=False,
                 ),
-            ]
+            ],
+            partitions_to_download=[],
         )
         assert failed_downloads == expected_failed_downloads
         # Cleanup - none
@@ -1669,7 +1666,7 @@ class TestConcatenationProcessing:
     ):
         # Setup
         failed_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -1687,7 +1684,7 @@ class TestConcatenationProcessing:
                     is_partitioned=False,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -1704,7 +1701,8 @@ class TestConcatenationProcessing:
                     md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
                     is_partitioned=False,
                 ),
-            ]
+            ],
+            partitions_to_download=[]
         )
         # Exercise
         concatenated_files = pdp.concatenation_processing(
@@ -1758,7 +1756,7 @@ class TestConcatenationProcessing:
     ):
         # Setup
         failed_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="WATCHLIST_945_20201218.txt.bz2",
                     download_url=(
@@ -1776,7 +1774,8 @@ class TestConcatenationProcessing:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[],
+            partitions_to_download=[
                 PartitionDownloadDetails(
                     parent_file_name='WATCHLIST_945_20201218.txt.bz2',
                     download_url=(
@@ -1800,7 +1799,7 @@ class TestConcatenationProcessing:
                         "WATCHLIST_945_20201218_10.txt"
                     ),
                     partition_index=10,
-                )
+                ),
             ]
         )
         # Exercise
@@ -1836,7 +1835,7 @@ class TestConcatenationProcessing:
     ):
         # Setup
         failed_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="COREREF_945_20201218.txt.bz2",
                     download_url=(
@@ -1870,7 +1869,8 @@ class TestConcatenationProcessing:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[],
+            partitions_to_download=[
                 PartitionDownloadDetails(
                     parent_file_name='COREREF_945_20201218.txt.bz2',
                     download_url=(
@@ -1917,8 +1917,9 @@ class TestUpdateFailedDownloadManifest:
         initial_download_manifest = mocked_concurrent_download_manifest
         failed_files = []
         failed_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[],
-            concurrent_download_manifest=[],
+            files_reference_data=[],
+            whole_files_to_download=[],
+            partitions_to_download=[],
         )
         # Exercise
         updated_download_manifest = pdp.update_failed_download_manifest(
@@ -1928,8 +1929,9 @@ class TestUpdateFailedDownloadManifest:
         )
         # Verify
         expected_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[],
-            concurrent_download_manifest=[],
+            files_reference_data=[],
+            whole_files_to_download=[],
+            partitions_to_download=[],
         )
         assert updated_download_manifest == expected_download_manifest
         # Cleanup - none
@@ -1955,8 +1957,13 @@ class TestUpdateFailedDownloadManifest:
             was originally split into.
         """
         # Setup
+        failed_downloads_manifest = ConcurrentDownloadManifest(
+            files_reference_data=[],
+            whole_files_to_download=[],
+            partitions_to_download=[],
+        )
         initial_download_manifest = mocked_concurrent_download_manifest
-        failed_files = [
+        integrity_test_failing_files = [
             DownloadDetails(
                 file_name="WATCHLIST_945_20201218.txt.bz2",
                 download_url=(
@@ -1974,19 +1981,15 @@ class TestUpdateFailedDownloadManifest:
                 is_partitioned=True,
             ),
         ]
-        failed_downloads_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[],
-            concurrent_download_manifest=[],
-        )
         # Exercise
         updated_download_manifest = pdp.update_failed_download_manifest(
             failed_downloads_manifest,
             initial_download_manifest,
-            failed_files,
+            integrity_test_failing_files,
         )
         # Verify
         expected_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="WATCHLIST_945_20201218.txt.bz2",
                     download_url=(
@@ -2004,7 +2007,8 @@ class TestUpdateFailedDownloadManifest:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[],
+            partitions_to_download=[
                 PartitionDownloadDetails(
                     parent_file_name='WATCHLIST_945_20201218.txt.bz2',
                     download_url=(
@@ -2156,7 +2160,7 @@ class TestUpdateFailedDownloadManifest:
         """
         # Setup
         initial_download_manifest = mocked_concurrent_download_manifest
-        failed_files = [
+        integrity_test_failing_files = [
             DownloadDetails(
                 file_name="COREREF_945_20201218.txt.bz2",
                 download_url=(
@@ -2175,7 +2179,7 @@ class TestUpdateFailedDownloadManifest:
             ),
         ]
         failed_downloads_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -2209,7 +2213,25 @@ class TestUpdateFailedDownloadManifest:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+            ],
+            partitions_to_download=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -2244,11 +2266,11 @@ class TestUpdateFailedDownloadManifest:
         updated_download_manifest = pdp.update_failed_download_manifest(
             failed_downloads_manifest,
             initial_download_manifest,
-            failed_files,
+            integrity_test_failing_files,
         )
         # Verify
         expected_download_manifest = ConcurrentDownloadManifest(
-            whole_files_reference=[
+            files_reference_data=[
                 DownloadDetails(
                     file_name="CROSSREF_945_20201218.txt.bz2",
                     download_url=(
@@ -2298,7 +2320,25 @@ class TestUpdateFailedDownloadManifest:
                     is_partitioned=True,
                 ),
             ],
-            concurrent_download_manifest=[
+            whole_files_to_download=[
+                DownloadDetails(
+                    file_name="CROSSREF_945_20201218.txt.bz2",
+                    download_url=(
+                        "https://api.icedatavault.icedataservices.com/v2/data/2020/12/18/S945/"
+                        "CROSS/20201218-S945_CROSS_ALL_0_0"
+                    ),
+                    file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                        "static_data/post_processing_scenario_1",
+                        "2020/12/18/CROSS/CROSSREF_945_20201218.txt.bz2",
+                    ),
+                    source_id=945,
+                    reference_date=datetime.datetime(year=2020, month=12, day=18),
+                    size=35150,
+                    md5sum="13da7cea9a7337cd71fd9aea4f909bc6",
+                    is_partitioned=False,
+                ),
+            ],
+            partitions_to_download=[
                 DownloadDetails(
                     file_name='CROSSREF_945_20201218.txt.bz2',
                     download_url=(
