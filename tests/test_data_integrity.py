@@ -1,7 +1,7 @@
 import hashlib
 import os
 import pathlib
-
+import datetime
 import pytest
 
 from datavault_api_client import data_integrity
@@ -66,8 +66,11 @@ class TestDataIntegrityTest:
                 'WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
             ),
             file_path=pathlib.Path(__file__).resolve().parent.joinpath(
-                'Data', '2020', '07', '21', 'S367', 'WATCHLIST', 'WATCHLIST_367_20200721.txt.bz2',
+                'mock_test_data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                'WATCHLIST_367_20200721.txt.bz2',
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=82451354,
             md5sum='62df718ef5eb5f9f1ea3f6ea1f826c30',
             is_partitioned=True
@@ -87,7 +90,7 @@ class TestDataIntegrityTest:
         for file in list(file_directory.glob('**/*.bz2')):
             file.unlink()
         # Then remove all the created folders iteratively:
-        directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
+        directory_root = pathlib.Path(__file__).resolve().parent / 'mock_test_data'
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
 
@@ -100,6 +103,8 @@ class TestDataIntegrityTest:
             file_path=pathlib.Path(__file__).resolve().parent.joinpath(
                 'static_data', 'CROSSREF_367_20200721_simulated.txt.bz2'
             ),
+            source_id=367,
+            reference_date=datetime.datetime(year=2020, month=7, day=21),
             size=924,
             md5sum='d742203115d9637199386ac8d71cc4cd',
             is_partitioned=False)
@@ -122,9 +127,11 @@ class TestGetListOfFailedDownloads:
                     'WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
                 ),
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
-                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'mock_data', '2020', '07', '21', 'S367', 'WATCHLIST',
                     'WATCHLIST_367_20200721.txt.bz2'
                 ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
                 size=82451354,
                 md5sum='62df718ef5eb5f9f1ea3f6ea1f826c30',
                 is_partitioned=True,
@@ -138,6 +145,8 @@ class TestGetListOfFailedDownloads:
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
                     'static_data', 'CROSSREF_367_20200721_simulated.txt.bz2'
                 ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
                 size=924,
                 md5sum='d742203115d9637199386ac8d71cc4cd',
                 is_partitioned=False,
@@ -145,7 +154,7 @@ class TestGetListOfFailedDownloads:
         ]
 
         file_directory = pathlib.Path(__file__).resolve().parent.joinpath(
-            'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+            'mock_data', '2020', '07', '21', 'S367', 'WATCHLIST',
         )
         file_directory.mkdir(parents=True, exist_ok=True)
         path_to_watchlist_file = file_directory / 'WATCHLIST_367_20200721.txt.bz2'
@@ -165,9 +174,11 @@ class TestGetListOfFailedDownloads:
                     '/07/21/S367/WATCHLIST/20200721-S367_WATCHLIST_username_0_0'
                 ),
                 file_path=pathlib.Path(__file__).resolve().parent.joinpath(
-                    'Data', '2020', '07', '21', 'S367', 'WATCHLIST',
+                    'mock_data', '2020', '07', '21', 'S367', 'WATCHLIST',
                     'WATCHLIST_367_20200721.txt.bz2',
                 ),
+                source_id=367,
+                reference_date=datetime.datetime(year=2020, month=7, day=21),
                 size=82451354,
                 md5sum='62df718ef5eb5f9f1ea3f6ea1f826c30',
                 is_partitioned=True,
@@ -177,6 +188,6 @@ class TestGetListOfFailedDownloads:
         # Cleanup
         for file in list(file_directory.glob('**/*.bz2')):
             file.unlink()
-        directory_root = pathlib.Path(__file__).resolve().parent / 'Data'
+        directory_root = pathlib.Path(__file__).resolve().parent / 'mock_data'
         for directory in list(directory_root.glob('**/'))[::-1]:
             directory.rmdir()
