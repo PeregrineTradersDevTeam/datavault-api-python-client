@@ -215,7 +215,7 @@ class TestTraverseApiDirectoryTree:
     def test_traversal_of_api_directory_tree(
         self,
         mocked_datavault_api_single_source_single_day,
-        mocked_set_of_files_available_to_download_single_source_single_day,
+        mocked_files_available_to_download_single_source_single_day,
     ):
         # Setup
         session = requests.Session()
@@ -230,7 +230,7 @@ class TestTraverseApiDirectoryTree:
             leaf_nodes
         )
         # Verify
-        expected_files = mocked_set_of_files_available_to_download_single_source_single_day
+        expected_files = mocked_files_available_to_download_single_source_single_day
         assert (
             discovered_files.sort(key=lambda x: x.file_name)
             == expected_files.sort(key=lambda x: x.file_name)
@@ -262,7 +262,7 @@ class TestTraverseApiDirectoryTree:
     def test_traversal_of_api_directory_tree_with_matching_source_id(
         self,
         mocked_datavault_api_multiple_sources_single_day,
-        mocked_set_of_files_available_to_download_multiple_sources_single_day,
+        mocked_files_available_to_download_multiple_sources_single_day,
     ):
         # Setup
         session = requests.Session()
@@ -281,7 +281,7 @@ class TestTraverseApiDirectoryTree:
         discovered_files.sort(key=lambda x: x.file_name)
         # Verify
         expected_files = [
-            file for file in mocked_set_of_files_available_to_download_multiple_sources_single_day
+            file for file in mocked_files_available_to_download_multiple_sources_single_day
             if file.source_id == int(source_id)
         ]
         expected_files.sort(key=lambda x: x.file_name)
@@ -382,7 +382,7 @@ class TestDatavaultCrawl:
     def test_crawler_with_instrument_level_url(
         self,
         mocked_datavault_api_instrument_level,
-        mocked_set_of_files_available_to_download_single_instrument,
+        mocked_files_available_to_download_single_instrument,
     ):
         # Setup
         url_to_crawl = (
@@ -392,13 +392,13 @@ class TestDatavaultCrawl:
         # Exercise
         discovered_files = crawler.datavault_crawler(url_to_crawl, credentials)
         # Verify
-        assert discovered_files == mocked_set_of_files_available_to_download_single_instrument
+        assert discovered_files == mocked_files_available_to_download_single_instrument
         # Cleanup - none
 
     def test_crawler_with_single_source_and_single_day_setup(
         self,
         mocked_datavault_api_single_source_single_day,
-        mocked_set_of_files_available_to_download_single_source_single_day,
+        mocked_files_available_to_download_single_source_single_day,
     ):
         # Setup
         url_to_crawl = "https://api.icedatavault.icedataservices.com/v2/list"
@@ -406,7 +406,7 @@ class TestDatavaultCrawl:
         # Exercise
         discovered_files = crawler.datavault_crawler(url_to_crawl, credentials)
         # Verify
-        expected_files = mocked_set_of_files_available_to_download_single_source_single_day
+        expected_files = mocked_files_available_to_download_single_source_single_day
         expected_files.sort(key=lambda x: x.file_name, reverse=True)
         assert discovered_files == expected_files
         # Cleanup - none
@@ -414,7 +414,7 @@ class TestDatavaultCrawl:
     def test_crawler_with_single_source_and_multiple_days_setup(
         self,
         mocked_datavault_api_single_source_multiple_days,
-        mocked_set_of_files_available_to_download_single_source_multiple_days,
+        mocked_files_available_to_download_single_source_multiple_days,
     ):
         # Setup
         url_to_crawl = "https://api.icedatavault.icedataservices.com/v2/list"
@@ -423,7 +423,7 @@ class TestDatavaultCrawl:
         discovered_files = crawler.datavault_crawler(url_to_crawl, credentials)
         discovered_files.sort(key=lambda x: x.file_name)
         # Verify
-        expected_files = mocked_set_of_files_available_to_download_single_source_multiple_days
+        expected_files = mocked_files_available_to_download_single_source_multiple_days
         expected_files.sort(key=lambda x: x.file_name)
         assert discovered_files == expected_files
         # Cleanup - none
@@ -431,7 +431,7 @@ class TestDatavaultCrawl:
     def test_crawler_under_multiple_sources_and_single_day_scenario(
         self,
         mocked_datavault_api_multiple_sources_single_day,
-        mocked_set_of_files_available_to_download_multiple_sources_single_day
+        mocked_files_available_to_download_multiple_sources_single_day
     ):
         # Setup
         url_to_crawl = "https://api.icedatavault.icedataservices.com/v2/list"
@@ -440,7 +440,7 @@ class TestDatavaultCrawl:
         discovered_files = crawler.datavault_crawler(url_to_crawl, credentials)
         discovered_files.sort(key=lambda x: x.file_name)
         # Verify
-        expected_files = mocked_set_of_files_available_to_download_multiple_sources_single_day
+        expected_files = mocked_files_available_to_download_multiple_sources_single_day
         expected_files.sort(key=lambda x: x.file_name)
         assert discovered_files == expected_files
         # Cleanup - none
@@ -448,7 +448,7 @@ class TestDatavaultCrawl:
     def test_crawler_under_select_source_scenario(
         self,
         mocked_datavault_api_multiple_sources_single_day,
-        mocked_set_of_files_available_to_download_multiple_sources_single_day,
+        mocked_files_available_to_download_multiple_sources_single_day,
     ):
         # Setup
         url_to_crawl = "https://api.icedatavault.icedataservices.com/v2/list"
@@ -458,7 +458,7 @@ class TestDatavaultCrawl:
         discovered_files.sort(key=lambda x: x.file_name)
         # Verify
         expected_files = [
-            file for file in mocked_set_of_files_available_to_download_multiple_sources_single_day
+            file for file in mocked_files_available_to_download_multiple_sources_single_day
             if file.source_id == 207
         ]
         expected_files.sort(key=lambda x: x.file_name)
