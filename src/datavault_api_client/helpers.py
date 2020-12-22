@@ -1,7 +1,9 @@
 """Implements helper functions."""
 
-from datavault_api_client.data_structures import DiscoveredFileInfo
 from typing import List, Tuple
+
+from datavault_api_client.data_structures import DiscoveredFileInfo
+
 
 ##########################################################################################
 
@@ -111,9 +113,10 @@ def generate_human_readable_size(byte_size: int) -> str:
             suffix = u
             divisor = m
 
-    if not suffix:
-        return f'{byte_size}B'
-    return f'{round(byte_size/divisor, 1)} {suffix}'
+    if suffix and divisor:
+        return f'{round(byte_size / divisor, 1)} {suffix}'
+    return f'{byte_size}B'
+    # return f'{round(byte_size/divisor, 1)} {suffix}'
 
 
 def calculate_total_download_size(discovered_files: List[DiscoveredFileInfo]) -> str:
