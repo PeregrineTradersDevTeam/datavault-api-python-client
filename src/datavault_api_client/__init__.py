@@ -11,6 +11,7 @@ from datavault_api_client import (
     data_integrity,
     data_structures,
     downloaders,
+    helpers,
     post_download_processing,
     pre_download_processing,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "data_integrity",
     "data_structures",
     "downloaders",
+    "helpers",
     "post_download_processing",
     "pre_download_processing",
 ]
