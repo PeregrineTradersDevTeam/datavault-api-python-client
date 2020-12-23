@@ -29,7 +29,7 @@ def datavault():
 
 @datavault.command(name="get")
 @click.argument("datavault_endpoint", type=click.STRING)
-@click.argument("data_directory", type=click.Path(exists=True))
+@click.argument("root_directory", type=click.Path(exists=True))
 @click.option(
     "--username",
     "-u",
@@ -81,7 +81,8 @@ def datavault():
     default=5.0,
     help=(
         "Specify the partition size in which the files are split when downloaded "
-        "concurrently. If omitted, the partition size is set by default to 5 MiB."
+        "concurrently. If omitted, the partition size is set by default to 5 MiB. "
+        "This command is only used when attempting to download files concurrently."
     )
 )
 @click.option(
@@ -93,7 +94,8 @@ def datavault():
         "minimum between 32 and the number of CPUs in the system being used plus 4. In "
         "this way, at least 5 workers are preserved for I/O bound tasks, and no more than "
         "32 CPU cores are used for CPU bound tasks, thus avoiding using very large "
-        "resources implicitly on many-core machines."
+        "resources implicitly on many-core machines. This command is only used when "
+        "attempting to download files concurrently."
     ),
 )
 @click.option(
@@ -107,7 +109,7 @@ def datavault():
 )
 def get(
     datavault_endpoint,
-    data_directory,
+    root_directory,
     username,
     password,
     download_type,
@@ -142,7 +144,7 @@ def get(
     Positional arguments:
     \b
     DATAVAULT_ENDPOINT          URL of the DataVault API endpoint to query.
-    DATA_DIRECTORY              Full path to the directory where the data will be downloaded.
+    ROOT_DIRECTORY              Full path to the directory where the data will be downloaded.
     """
     credentials = (username, password)
     try:
@@ -176,7 +178,7 @@ def get(
         if download_type == "synchronous":
             download_manifest = pre_synchronous_download_processor(
                 discovered_files_to_download,
-                data_directory,
+                root_directory,
             )
             click.echo("Initialising download ...")
             download_files_synchronously(
@@ -187,7 +189,7 @@ def get(
         else:
             download_manifest = pre_concurrent_download_processor(
                 discovered_files_to_download,
-                path_to_data_directory=data_directory,
+                path_to_data_directory=root_directory,
                 partition_size_in_mib=partition_size,
             )
             click.echo("Initialising download ...")
