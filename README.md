@@ -1,7 +1,5 @@
 # DataVault API Client Library for Python
 
-[TOC]
-
 ## Overview
 
 The DataVault API Client Library for Python is designed to offer a straightforward access to the Intercontinental Exchange (ICE) DataVault data platform. The library offers a way to programmatically interact with the DataVault API to discover and download Replay, PlusTick and Watchlist files and their accompanying reference data. 
@@ -40,7 +38,7 @@ In order to operate the program you need to have an account with the Intercontin
 To use the DataVault API Client Library for Python, first clone the repository on your device using the command below:
 
 ```shell
-git clone <insert-here-the-link-to-git-repo> datavault-api-python-client
+git clone https://github.com/PeregrineTradersDevTeam/datavault-api-python-client.git datavault-api-python-client
 cd datavault-api-python-client
 ```
 
