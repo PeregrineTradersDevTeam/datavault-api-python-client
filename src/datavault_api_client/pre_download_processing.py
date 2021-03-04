@@ -327,7 +327,7 @@ def update_manifest_file(
     Parameters
     ----------
     path_to_download_manifest: str
-        The full path to the donwload manifest file to update.
+        The full path to the download manifest file to update.
     items_to_append: List[ItemToDownload]
         A list of ItemToDownload typed-dictionaries to add to the download manifest file.
     """
