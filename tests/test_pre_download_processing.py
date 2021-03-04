@@ -446,6 +446,90 @@ class TestWriteManifestToJson:
         path_to_outfile.unlink()
 
 
+class TestUpdateManifestFile:
+    def test_update_of_existing_manifest_file(self):
+        """Tests the update of an existing download manifest file with additional data.
+        """
+        # Setup
+        existing_manifest_content = [
+            {
+                'file_name': 'WATCHLIST_207_20210212.txt.bz2',
+                'download_url': (
+                    'https://api.icedatavault.icedataservices.com/v2/data/2021/02/12/S207/'
+                    'WATCHLIST/20210212-S207_WATCHLIST_username_0_0'
+                ),
+                'file_path': (
+                    '/home/jacopo/Mkt_Data/2021/02/12/S207/WATCHLIST/WATCHLIST_207_20210212.txt.bz2'
+                ),
+                'source_id': 207,
+                'reference_date': '2021-02-12T00:00:00',
+                'size': 93624504,
+                'md5sum': 'a8edc2d1c5ed49881f7bb238631b5000',
+            },
+            {
+                'file_name': 'CROSSREF_207_20210212.txt.bz2',
+                'download_url': (
+                    'https://api.icedatavault.icedataservices.com/v2/data/2021/02/12/S207/'
+                    'CROSS/20210212-S207_CROSS_ALL_0_0'
+                ),
+                'file_path': (
+                    '/home/jacopo/Mkt_Data/2021/02/12/S207/CROSS/CROSSREF_207_20210212.txt.bz2'
+                ),
+                'source_id': 207,
+                'reference_date': '2021-02-12T00:00:00',
+                'size': 13446060,
+                'md5sum': '9af83565158f62920f9055c5ef29c335',
+            },
+            {
+                'file_name': 'COREREF_207_20210212.txt.bz2',
+                'download_url': (
+                    'https://api.icedatavault.icedataservices.com/v2/data/2021/02/12/S207/'
+                    'CORE/20210212-S207_CORE_ALL_0_0'
+                ),
+                'file_path': (
+                    '/home/jacopo/Mkt_Data/2021/02/12/S207/CORE/COREREF_207_20210212.txt.bz2'
+                ),
+                'source_id': 207,
+                'reference_date': '2021-02-12T00:00:00',
+                'size': 4204727,
+                'md5sum': 'db66eacc4354b667080f2d2178b45c32',
+            }
+        ]
+        manifest_update = [
+            ItemToDownload(
+                file_name="WATCHLIST_367_20200212.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/"
+                    "WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "02", "12", "S367", "WATCHLIST",
+                    "WATCHLIST_367_20200212.txt.bz2"
+                ).as_posix(),
+                source_id=367,
+                reference_date="2020-02-12T00:00:00",
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            ),
+        ]
+        path_to_manifest_file = pathlib.Path(__file__).resolve().parent.joinpath(
+            'static_data', 'download_manifest_20210212.json',
+        ).as_posix()
+        with open(path_to_manifest_file, 'w') as outfile:
+            json.dump(existing_manifest_content, outfile, indent=2)
+
+        # Exercise
+        pdp.update_manifest_file(path_to_manifest_file, manifest_update)
+        # Verify
+        with open(path_to_manifest_file, 'r') as infile:
+            updated_file_content = json.load(infile)
+        expected_file_content = existing_manifest_content.copy()
+        expected_file_content.extend(manifest_update)
+        assert updated_file_content == expected_file_content
+        # Cleanup - none
+        pathlib.Path(path_to_manifest_file).unlink()
+
+
 class TestGenerateManifestFile:
     def test_generation_of_manifest_file(
         self,

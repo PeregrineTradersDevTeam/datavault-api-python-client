@@ -299,7 +299,7 @@ def write_manifest_to_json(
     items_to_download: List[ItemToDownload],
     path_to_outfile: str,
 ) -> None:
-    """Writes the content of the download manifest to a JSON file.
+    """Writes the content of the download manifest to a JSON file or updates its content.
 
     Parameters
     ----------
@@ -311,8 +311,32 @@ def write_manifest_to_json(
     """
     if not pathlib.Path(path_to_outfile).parent.exists():
         pathlib.Path(path_to_outfile).parent.mkdir(parents=True, exist_ok=True)
-    with open(path_to_outfile, "w") as outfile:
-        json.dump(items_to_download, outfile, indent=2)
+    if not pathlib.Path(path_to_outfile).is_file():
+        with open(path_to_outfile, "w") as outfile:
+            json.dump(items_to_download, outfile, indent=2)
+    else:
+        update_manifest_file(path_to_outfile, items_to_download)
+
+
+def update_manifest_file(
+    path_to_download_manifest: str,
+    items_to_append: List[ItemToDownload],
+) -> None:
+    """Updates a download manifest file.
+
+    Parameters
+    ----------
+    path_to_download_manifest: str
+        The full path to the donwload manifest file to update.
+    items_to_append: List[ItemToDownload]
+        A list of ItemToDownload typed-dictionaries to add to the download manifest file.
+    """
+    with pathlib.Path(path_to_download_manifest).open('r') as infile:
+        existing_manifest = json.load(infile)
+    updated_manifest = existing_manifest.copy().extend(items_to_append)
+    updated_manifest.sort(key=lambda x: x.get("source_id"))
+    with pathlib.Path(path_to_download_manifest).open('w') as outfile:
+        json.dump(updated_manifest, outfile, indent=2)
 
 
 def generate_manifest_file(download_details: List[DownloadDetails]) -> None:
