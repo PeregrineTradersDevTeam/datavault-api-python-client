@@ -333,7 +333,8 @@ def update_manifest_file(
     """
     with pathlib.Path(path_to_download_manifest).open('r') as infile:
         existing_manifest = json.load(infile)
-    updated_manifest = existing_manifest.copy().extend(items_to_append)
+    updated_manifest = existing_manifest.copy()
+    updated_manifest.extend(items_to_append)
     updated_manifest.sort(key=lambda x: x.get("source_id"))
     with pathlib.Path(path_to_download_manifest).open('w') as outfile:
         json.dump(updated_manifest, outfile, indent=2)

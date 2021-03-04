@@ -17,7 +17,7 @@ from datavault_api_client import (
 )
 
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 __title__ = "datavault_api_client"
 __description__ = "Datavault API Client Library for Python"

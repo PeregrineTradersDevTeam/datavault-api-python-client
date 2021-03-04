@@ -445,6 +445,59 @@ class TestWriteManifestToJson:
         # Cleanup - none
         path_to_outfile.unlink()
 
+    def test_manifest_writer_with_existing_manifest_file(self):
+        """Tests the behaviour of the manifest writer when a manifest file already exists..
+        """
+        # Setup
+        existing_manifest_content = [
+            {
+                'file_name': 'WATCHLIST_207_20210212.txt.bz2',
+                'download_url': (
+                    'https://api.icedatavault.icedataservices.com/v2/data/2021/02/12/S207/'
+                    'WATCHLIST/20210212-S207_WATCHLIST_username_0_0'
+                ),
+                'file_path': (
+                    '/home/jacopo/Mkt_Data/2021/02/12/S207/WATCHLIST/WATCHLIST_207_20210212.txt.bz2'
+                ),
+                'source_id': 207,
+                'reference_date': '2021-02-12T00:00:00',
+                'size': 93624504,
+                'md5sum': 'a8edc2d1c5ed49881f7bb238631b5000',
+            },
+        ]
+        path_to_manifest_file = pathlib.Path(__file__).resolve().parent.joinpath(
+            'static_data', 'download_manifest_20210212.json',
+        ).as_posix()
+        with open(path_to_manifest_file, 'w') as outfile:
+            json.dump(existing_manifest_content, outfile, indent=2)
+        file_payload = [
+            ItemToDownload(
+                file_name="WATCHLIST_367_20200212.txt.bz2",
+                download_url=(
+                    "https://api.icedatavault.icedataservices.com/v2/data/2020/07/16/S367/"
+                    "WATCHLIST/20200716-S367_WATCHLIST_username_0_0"
+                ),
+                file_path=pathlib.Path(__file__).resolve().parent.joinpath(
+                    "Data", "2020", "02", "12", "S367", "WATCHLIST",
+                    "WATCHLIST_367_20200212.txt.bz2"
+                ).as_posix(),
+                source_id=367,
+                reference_date="2020-02-12T00:00:00",
+                size=100145874,
+                md5sum="fb34325ec9262adc74c945a9e7c9b465",
+            ),
+        ]
+        # Exercise
+        pdp.write_manifest_to_json(file_payload, path_to_manifest_file)
+        # Verify
+        expected_file_content = existing_manifest_content.copy()
+        expected_file_content.extend(file_payload)
+        with open(path_to_manifest_file, 'r') as infile:
+            manifest_content = json.load(infile)
+        assert manifest_content == expected_file_content
+        # Cleanup - none
+        pathlib.Path(path_to_manifest_file).unlink()
+
 
 class TestUpdateManifestFile:
     def test_update_of_existing_manifest_file(self):
